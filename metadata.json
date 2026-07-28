@@ -1,0 +1,6 @@
+{
+  "name": "MÁRIO CZARNOBAI - Personal Trainer",
+  "description": "Plataforma oficial de Consultoria Online e Treino Personalizado do Mário Czarnobai. Galeria de resultados, agendamento de consultas e depoimentos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
