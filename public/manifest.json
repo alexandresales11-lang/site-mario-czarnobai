@@ -1,0 +1,22 @@
+{
+  "short_name": "Czarnobai App",
+  "name": "Mário Czarnobai - Personal & Consultoria",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#070C16",
+  "theme_color": "#06b6d4",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "Aplicativo exclusivo para alunos do Personal Trainer Mário Czarnobai. Treinos, dieta e evolução na palma da sua mão."
+}
