@@ -186,15 +186,27 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({ isOpen, onClos
             )}
 
             {activeTab === 'desktop' && (
-              <div className="space-y-3 text-xs text-slate-300 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
-                <p className="font-semibold text-white">Como instalar no computador (Chrome / Edge):</p>
-                <div className="flex items-start gap-3">
-                  <div className="p-1.5 bg-slate-800 rounded-lg text-cyan-400 font-bold shrink-0">1</div>
-                  <p>Clique no ícone de computador/download na barra de endereço do navegador no canto superior direito.</p>
+              <div className="space-y-4 text-xs text-slate-300 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+                <div>
+                  <p className="font-bold text-cyan-400 mb-2">Opção 1: Pelo Menu de 3 Pontos (Aberto no seu print)</p>
+                  <div className="space-y-2 pl-1">
+                    <div className="flex items-start gap-2.5">
+                      <div className="p-1 px-2 bg-slate-800 rounded-lg text-cyan-400 font-bold shrink-0">1</div>
+                      <p>No menu que você abriu no canto direito, passe o mouse sobre <strong>"Transmitir, salvar e compartilhar"</strong> (ou <strong>"Mais ferramentas"</strong>).</p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <div className="p-1 px-2 bg-slate-800 rounded-lg text-cyan-400 font-bold shrink-0">2</div>
+                      <p>Clique na opção <strong>"Instalar Czarnobai App..."</strong> ou <strong>"Criar atalho..."</strong>.</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-1.5 bg-slate-800 rounded-lg text-cyan-400 font-bold shrink-0">2</div>
-                  <p>Clique em <strong>"Instalar"</strong> para abrir o aplicativo numa janela própria dedicada.</p>
+
+                <div className="pt-2 border-t border-slate-800">
+                  <p className="font-bold text-cyan-400 mb-2">Opção 2: Pela Barra de Endereço</p>
+                  <div className="flex items-start gap-2.5 pl-1">
+                    <div className="p-1 px-2 bg-slate-800 rounded-lg text-cyan-400 font-bold shrink-0">★</div>
+                    <p>Na barra onde digita o site (ao lado do endereço), clique no ícone de <strong>computador com seta para baixo</strong> e selecione <strong>Instalar</strong>.</p>
+                  </div>
                 </div>
               </div>
             )}
