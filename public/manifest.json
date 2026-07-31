@@ -3,13 +3,13 @@
   "name": "Mário Czarnobai - Personal & Consultoria",
   "icons": [
     {
-      "src": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=192",
-      "type": "image/jpeg",
+      "src": "https://i.imgur.com/FVHkZ7T.png",
+      "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=512",
-      "type": "image/jpeg",
+      "src": "https://i.imgur.com/FVHkZ7T.png",
+      "type": "image/png",
       "sizes": "512x512"
     }
   ],
