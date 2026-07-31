@@ -238,7 +238,7 @@ const getStoredAccounts = (): Record<string, UserAccount> => {
     loadedAccounts[marioEmail] = {
       name: 'Mário Czarnobai',
       email: marioEmail,
-      password: 'admin',
+      password: '123456789',
       phone: '(41) 99999-0000',
       goal: 'Personal Trainer & Head Coach',
       photo: 'https://i.imgur.com/FVHkZ7T.png',
@@ -251,6 +251,7 @@ const getStoredAccounts = (): Record<string, UserAccount> => {
     };
   } else {
     loadedAccounts[marioEmail].isAdmin = true;
+    loadedAccounts[marioEmail].password = '123456789';
   }
 
   // Ensure Alexandre Sales account exists
@@ -488,10 +489,13 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
       return;
     }
 
-    // Find account by email or username
+    // Find account by email, name, or admin username (admmario)
     const allAccounts = getStoredAccounts();
     const foundAcc = Object.values(allAccounts).find(
-      a => a.email.toLowerCase() === cleanInput || a.name.toLowerCase().includes(cleanInput)
+      a =>
+        a.email.toLowerCase() === cleanInput ||
+        a.name.toLowerCase().includes(cleanInput) ||
+        (a.isAdmin && (cleanInput === 'admmario' || cleanInput === 'mario'))
     );
 
     if (!foundAcc) {
@@ -499,7 +503,11 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
       return;
     }
 
-    if (foundAcc.password !== cleanPass) {
+    const isValidPassword =
+      foundAcc.password === cleanPass ||
+      (foundAcc.isAdmin && (cleanPass === '123456789' || cleanPass === 'admin'));
+
+    if (!isValidPassword) {
       setAuthError('Senha incorreta! Digite a senha cadastrada para este usuário.');
       return;
     }
@@ -629,6 +637,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
   const handleLogout = () => {
     localStorage.removeItem('czarnobai_logged_in');
     localStorage.removeItem('czarnobai_current_user_email');
+    localStorage.removeItem('czarnobai_admin_viewing_student');
     setCurrentUserEmail('');
     setIsLoggedIn(false);
   };
@@ -778,7 +787,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
               <img
                 src="https://i.imgur.com/FVHkZ7T.png"
                 alt="Mário Czarnobai"
-                className="w-full h-full object-cover rounded-[14px]"
+                className="w-full h-full object-cover object-top rounded-[14px]"
               />
             </div>
             <div className="absolute -bottom-1 -right-1 bg-cyan-500 p-1 rounded-full text-black shadow-md">
@@ -899,38 +908,6 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
               <span>ENTRAR NA MINHA CONTA</span>
               <ArrowRight className="w-4 h-4" />
             </button>
-
-            {/* Quick Demo & Admin Access Buttons */}
-            <div className="pt-3 border-t border-slate-800/80 space-y-2 text-center">
-              <button
-                type="button"
-                onClick={handleQuickAdminLogin}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-cyan-500/20 border border-cyan-400/50 text-cyan-300 font-extrabold text-xs hover:bg-cyan-900/40 transition-all flex items-center justify-center gap-2 shadow-lg hover:scale-[1.01]"
-              >
-                <ShieldCheck className="w-4 h-4 text-cyan-400 stroke-[2.5]" />
-                <span>PAINEL DO PERSONAL (Acesso Mário Czarnobai)</span>
-              </button>
-
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={handleQuickAlexandreLogin}
-                  className="py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 font-bold text-[11px] hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Aluno Alexandre</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleQuickDemoLogin}
-                  className="py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-semibold text-[11px] hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <User className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Aluno Lucas</span>
-                </button>
-              </div>
-            </div>
 
             <div className="text-center pt-2">
               <p className="text-xs text-slate-400">
@@ -1095,6 +1072,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
         }}
         onLogoutAdmin={handleLogout}
         onSwitchToStudentView={(studentEmail) => {
+          localStorage.setItem('czarnobai_admin_viewing_student', 'true');
           setCurrentUserEmail(studentEmail.toLowerCase());
         }}
         onCloseApp={onCloseApp}
@@ -1102,10 +1080,12 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
     );
   }
 
+  const isAdminViewingStudent = localStorage.getItem('czarnobai_admin_viewing_student') === 'true';
+
   return (
     <div className="w-full max-w-4xl mx-auto bg-[#070C16] border border-cyan-900/50 rounded-3xl shadow-2xl overflow-hidden font-sans text-slate-100 min-h-[750px] flex flex-col relative">
-      {/* Admin Mode Quick Switch Banner */}
-      {accountsDb['mario@czarnobai.com'] && (
+      {/* Admin Mode Quick Switch Banner (Only visible when Admin Mario is inspecting a student) */}
+      {isAdminViewingStudent && (
         <div className="bg-gradient-to-r from-cyan-950 via-[#0C172B] to-cyan-950 border-b border-cyan-500/30 px-4 py-2 text-center flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-cyan-300">
           <div className="flex flex-wrap items-center justify-between w-full">
             <span className="flex items-center gap-1.5">
@@ -1118,10 +1098,13 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
               )}
             </span>
             <button
-              onClick={() => setCurrentUserEmail('mario@czarnobai.com')}
+              onClick={() => {
+                localStorage.removeItem('czarnobai_admin_viewing_student');
+                setCurrentUserEmail('mario@czarnobai.com');
+              }}
               className="px-3 py-1 rounded-xl bg-cyan-500 text-black font-extrabold text-[10px] uppercase hover:bg-cyan-400 transition-colors shadow-md"
             >
-              👑 Painel Admin do Personal Mário
+              👑 Voltar ao Painel do Personal
             </button>
           </div>
         </div>

@@ -511,7 +511,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <img
                 src="https://i.imgur.com/FVHkZ7T.png"
                 alt="Personal Mário Czarnobai"
-                className="w-full h-full object-cover rounded-[14px]"
+                className="w-full h-full object-cover object-top rounded-[14px]"
               />
             </div>
             <div className="absolute -bottom-1 -right-1 bg-cyan-400 text-black p-1 rounded-full shadow-md">

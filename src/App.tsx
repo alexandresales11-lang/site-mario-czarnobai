@@ -17,18 +17,30 @@ import { Footer } from './components/Footer';
 import { AppShowcaseSection } from './components/AppShowcaseSection';
 import { StudentApp } from './components/StudentApp';
 import { PwaInstallModal } from './components/PwaInstallModal';
-import { Smartphone, Sparkles, ArrowLeft } from 'lucide-react';
+import { Sparkles, ExternalLink } from 'lucide-react';
 
 export default function App() {
-  const [viewMode, setViewMode] = useState<'landing' | 'app'>('landing');
+  const [viewMode, setViewMode] = useState<'landing' | 'app'>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'site') {
+        return 'landing';
+      }
+    }
+    // Default directly to app mode so mobile app opens directly to login
+    return 'app';
+  });
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#070C16] text-slate-100 selection:bg-cyan-500 selection:text-black">
-      <Navbar
-        onOpenApp={() => setViewMode('app')}
-        onOpenInstallModal={() => setIsInstallModalOpen(true)}
-      />
+      {/* Navbar is rendered ONLY on the institutional website */}
+      {viewMode === 'landing' && (
+        <Navbar
+          onOpenApp={() => setViewMode('app')}
+          onOpenInstallModal={() => setIsInstallModalOpen(true)}
+        />
+      )}
 
       {/* Floating Mode Toggle Bar when on Landing Page */}
       {viewMode === 'landing' && (
@@ -45,23 +57,19 @@ export default function App() {
 
       {/* VIEW MODE: STUDENT APP PORTAL */}
       {viewMode === 'app' ? (
-        <div className="min-h-screen py-6 px-4 bg-[#050A12] animate-fadeIn">
-          {/* Top Banner inside App mode */}
-          <div className="max-w-4xl mx-auto mb-4 flex items-center justify-between">
+        <div className="min-h-screen py-4 sm:py-6 px-3 sm:px-4 bg-[#050A12] animate-fadeIn">
+          {/* Clean App Header Bar - External link to site */}
+          <div className="max-w-4xl mx-auto mb-3 sm:mb-4 flex items-center justify-between">
             <button
-              onClick={() => setViewMode('landing')}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition-colors"
+              type="button"
+              onClick={() => {
+                const siteUrl = `${window.location.origin}?mode=site`;
+                window.open(siteUrl, '_blank', 'noopener,noreferrer');
+              }}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition-colors shadow-md hover:bg-slate-800"
             >
-              <ArrowLeft className="w-4 h-4 text-cyan-400" />
-              <span>Voltar para o Site Institucional</span>
-            </button>
-
-            <button
-              onClick={() => setIsInstallModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/20 text-cyan-300 font-bold text-xs border border-cyan-500/30"
-            >
-              <Smartphone className="w-4 h-4" />
-              <span>Instalar App no Celular</span>
+              <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Ir para o Site Institucional</span>
             </button>
           </div>
 
@@ -88,7 +96,8 @@ export default function App() {
         </main>
       )}
 
-      <Footer />
+      {/* Footer is rendered ONLY on the institutional website */}
+      {viewMode === 'landing' && <Footer />}
 
       {/* PWA INSTALL MODAL */}
       <PwaInstallModal
