@@ -1011,8 +1011,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <label className="block text-xs font-semibold text-slate-300 mb-1">Calorias Totais (kcal)</label>
                       <input
                         type="number"
-                        id="diet_calories"
-                        defaultValue={selectedStudent.dietPlan?.calories || 2400}
+                        value={selectedStudent.dietPlan?.calories ?? 2600}
+                        onChange={(e) => {
+                          const val = Number(e.target.value) || 0;
+                          handleSaveDietMacros(
+                            val,
+                            selectedStudent.dietPlan?.proteinGrams || 180,
+                            selectedStudent.dietPlan?.carbsGrams || 260,
+                            selectedStudent.dietPlan?.fatGrams || 65,
+                            selectedStudent.dietPlan?.supplementation || ''
+                          );
+                        }}
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-cyan-400 font-black focus:outline-none focus:border-cyan-500"
                       />
                     </div>
@@ -1021,8 +1030,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <label className="block text-xs font-semibold text-slate-300 mb-1">Proteínas (g)</label>
                       <input
                         type="number"
-                        id="diet_protein"
-                        defaultValue={selectedStudent.dietPlan?.proteinGrams || 180}
+                        value={selectedStudent.dietPlan?.proteinGrams ?? 180}
+                        onChange={(e) => {
+                          const val = Number(e.target.value) || 0;
+                          handleSaveDietMacros(
+                            selectedStudent.dietPlan?.calories || 2600,
+                            val,
+                            selectedStudent.dietPlan?.carbsGrams || 260,
+                            selectedStudent.dietPlan?.fatGrams || 65,
+                            selectedStudent.dietPlan?.supplementation || ''
+                          );
+                        }}
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-cyan-500"
                       />
                     </div>
@@ -1031,8 +1049,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <label className="block text-xs font-semibold text-slate-300 mb-1">Carboidratos (g)</label>
                       <input
                         type="number"
-                        id="diet_carbs"
-                        defaultValue={selectedStudent.dietPlan?.carbsGrams || 220}
+                        value={selectedStudent.dietPlan?.carbsGrams ?? 260}
+                        onChange={(e) => {
+                          const val = Number(e.target.value) || 0;
+                          handleSaveDietMacros(
+                            selectedStudent.dietPlan?.calories || 2600,
+                            selectedStudent.dietPlan?.proteinGrams || 180,
+                            val,
+                            selectedStudent.dietPlan?.fatGrams || 65,
+                            selectedStudent.dietPlan?.supplementation || ''
+                          );
+                        }}
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-amber-400 font-bold focus:outline-none focus:border-cyan-500"
                       />
                     </div>
@@ -1041,8 +1068,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <label className="block text-xs font-semibold text-slate-300 mb-1">Gorduras (g)</label>
                       <input
                         type="number"
-                        id="diet_fats"
-                        defaultValue={selectedStudent.dietPlan?.fatGrams || 60}
+                        value={selectedStudent.dietPlan?.fatGrams ?? 65}
+                        onChange={(e) => {
+                          const val = Number(e.target.value) || 0;
+                          handleSaveDietMacros(
+                            selectedStudent.dietPlan?.calories || 2600,
+                            selectedStudent.dietPlan?.proteinGrams || 180,
+                            selectedStudent.dietPlan?.carbsGrams || 260,
+                            val,
+                            selectedStudent.dietPlan?.supplementation || ''
+                          );
+                        }}
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-emerald-400 font-bold focus:outline-none focus:border-cyan-500"
                       />
                     </div>
@@ -1052,11 +1088,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <label className="block text-xs font-semibold text-slate-300 mb-1">Suplementação Orientada</label>
                     <input
                       type="text"
-                      id="diet_supps"
-                      defaultValue={
-                        selectedStudent.dietPlan?.supplementation ||
-                        'Creatina 5g pós-treino + Whey Protein 30g + Multivitamínico'
-                      }
+                      value={selectedStudent.dietPlan?.supplementation || ''}
+                      onChange={(e) => {
+                        handleSaveDietMacros(
+                          selectedStudent.dietPlan?.calories || 2600,
+                          selectedStudent.dietPlan?.proteinGrams || 180,
+                          selectedStudent.dietPlan?.carbsGrams || 260,
+                          selectedStudent.dietPlan?.fatGrams || 65,
+                          e.target.value
+                        );
+                      }}
                       placeholder="Ex: Creatina 5g pós-treino..."
                       className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
                     />

@@ -350,6 +350,75 @@ const getStoredAccounts = (): Record<string, UserAccount> => {
     };
   }
 
+  // Ensure Ricardo Santos (Aluno focado) account exists
+  const ricardoEmail = 'ricardo.santos@email.com';
+  if (!loadedAccounts[ricardoEmail]) {
+    loadedAccounts[ricardoEmail] = {
+      name: 'Ricardo Santos',
+      email: ricardoEmail,
+      password: '123',
+      phone: '(11) 98111-2233',
+      goal: 'Emagrecimento & Definição',
+      photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200',
+      streak: 18,
+      waterGlasses: 10,
+      exercises: DEMO_EXERCISES,
+      planName: 'Consultoria V.I.P. Trimestral',
+      paymentStatus: 'pago',
+      paymentDueDate: '20/09/2026',
+      statusBadge: 'focado',
+      marioNotes: 'Excelente evolução no protocolo de emagrecimento. Manter déficit calórico leve e constância.',
+      dietPlan: {
+        calories: 2200,
+        proteinGrams: 190,
+        carbsGrams: 180,
+        fatGrams: 55,
+        meals: [
+          { id: 'm1', time: '08:00', title: 'Refeição 1 (Café)', description: '3 Ovos + 40g Aveia + Café preto' },
+          { id: 'm2', time: '12:30', title: 'Refeição 2 (Almoço)', description: '200g Frango + 100g Arroz + Salada' }
+        ],
+        supplementation: 'Creatina 5g + Cafeína pré-treino'
+      },
+      messages: [
+        { id: 'm1', sender: 'mario', text: 'Parabéns Ricardo! Perdeu 3kg com ótima preservação de massa magra!', time: '10:00' }
+      ]
+    };
+  }
+
+  // Ensure Juliana Mendes (Aluna em inconstância) account exists
+  const julianaEmail = 'juliana.mendes@email.com';
+  if (!loadedAccounts[julianaEmail]) {
+    loadedAccounts[julianaEmail] = {
+      name: 'Juliana Mendes',
+      email: julianaEmail,
+      password: '123',
+      phone: '(21) 98222-3344',
+      goal: 'Definição & Ganho de Massa',
+      photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200',
+      streak: 2,
+      waterGlasses: 4,
+      exercises: DEFAULT_CLEAN_EXERCISES,
+      planName: 'Consultoria V.I.P. Semestral',
+      paymentStatus: 'pago',
+      paymentDueDate: '10/10/2026',
+      statusBadge: 'inconstante',
+      marioNotes: 'Apresenta algumas faltas na semana. Ajustar horários de treino para o período noturno.',
+      dietPlan: {
+        calories: 1900,
+        proteinGrams: 140,
+        carbsGrams: 190,
+        fatGrams: 50,
+        meals: [
+          { id: 'm1', time: '08:00', title: 'Refeição 1', description: '2 Ovos + 1 Tapioca com Queijo Minas' }
+        ],
+        supplementation: 'Whey Protein 30g'
+      },
+      messages: [
+        { id: 'm1', sender: 'mario', text: 'Oi Juliana, mandei sua nova ficha no app! Tente manter a frequência nesta semana.', time: '14:20' }
+      ]
+    };
+  }
+
   // Ensure Mariana Costa (Aluno em inconstância) account exists
   const marianaEmail = 'mariana.costa@email.com';
   if (!loadedAccounts[marianaEmail]) {
@@ -1790,9 +1859,9 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
             <div className="p-3 rounded-t-2xl bg-slate-900 border border-slate-800 flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5">
                 <img
-                  src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=200"
+                  src="https://i.imgur.com/FVHkZ7T.png"
                   alt="Mário Czarnobai"
-                  className="w-full h-full object-cover rounded-full"
+                  className="w-full h-full object-cover object-top rounded-full"
                 />
               </div>
               <div>
