@@ -3,7 +3,8 @@ import {
   Dumbbell, Play, CheckCircle2, Circle, Clock, Flame, Award,
   Droplets, Utensils, MessageSquare, Send, ArrowLeft, Download,
   TrendingDown, Calendar, ChevronRight, RotateCcw, User, Sparkles,
-  Smartphone, ShieldCheck, Check, Plus, BarChart2, CheckSquare
+  Smartphone, ShieldCheck, Check, Plus, BarChart2, CheckSquare,
+  Lock, Mail, Phone, Eye, EyeOff, LogOut, UserPlus, LogIn, AlertCircle, ArrowRight
 } from 'lucide-react';
 
 interface StudentAppProps {
@@ -32,6 +33,123 @@ interface ChatMessage {
 }
 
 export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstallModal }) => {
+  // Authentication state
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return localStorage.getItem('czarnobai_logged_in') === 'true';
+  });
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [authSuccessMsg, setAuthSuccessMsg] = useState('');
+
+  // Login Form State
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+
+  // Signup Form State
+  const [signupName, setSignupName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPhone, setSignupPhone] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
+  const [signupGoal, setSignupGoal] = useState('Hipertrofia & Definição');
+
+  // User Profile
+  const [userProfile, setUserProfile] = useState<{
+    name: string;
+    email: string;
+    goal: string;
+    photo: string;
+  }>(() => {
+    const saved = localStorage.getItem('czarnobai_user_profile');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // fallback
+      }
+    }
+    return {
+      name: 'Lucas Mendes',
+      email: 'lucas.mendes@email.com',
+      goal: 'Hipertrofia & Definição',
+      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
+    };
+  });
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    if (!loginEmail || !loginPassword) {
+      setAuthError('Por favor, informe seu e-mail ou usuário e a senha.');
+      return;
+    }
+
+    if (loginPassword.length < 4) {
+      setAuthError('A senha deve conter pelo menos 4 caracteres.');
+      return;
+    }
+
+    const profile = {
+      name: userProfile.name || 'Aluno Mário Czarnobai',
+      email: loginEmail,
+      goal: userProfile.goal || 'Hipertrofia & Definição',
+      photo: userProfile.photo
+    };
+    localStorage.setItem('czarnobai_logged_in', 'true');
+    localStorage.setItem('czarnobai_user_profile', JSON.stringify(profile));
+    setUserProfile(profile);
+    setIsLoggedIn(true);
+  };
+
+  const handleSignupSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    if (!signupName || !signupEmail || !signupPassword) {
+      setAuthError('Preencha seu nome, e-mail e crie uma senha.');
+      return;
+    }
+
+    if (signupPassword !== signupConfirmPassword) {
+      setAuthError('As senhas não coincidem. Verifique e tente novamente.');
+      return;
+    }
+
+    const newProfile = {
+      name: signupName,
+      email: signupEmail,
+      goal: signupGoal,
+      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
+    };
+
+    localStorage.setItem('czarnobai_logged_in', 'true');
+    localStorage.setItem('czarnobai_user_profile', JSON.stringify(newProfile));
+    setUserProfile(newProfile);
+    setAuthSuccessMsg('Conta criada com sucesso! Acessando área de membros...');
+    setTimeout(() => {
+      setIsLoggedIn(true);
+      setAuthSuccessMsg('');
+    }, 800);
+  };
+
+  const handleQuickDemoLogin = () => {
+    const demoProfile = {
+      name: 'Lucas Mendes',
+      email: 'lucas.mendes@email.com',
+      goal: 'Hipertrofia & Definição',
+      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
+    };
+    localStorage.setItem('czarnobai_logged_in', 'true');
+    localStorage.setItem('czarnobai_user_profile', JSON.stringify(demoProfile));
+    setUserProfile(demoProfile);
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('czarnobai_logged_in');
+    setIsLoggedIn(false);
+  };
+
   const [activeTab, setActiveTab] = useState<'treinos' | 'evolucao' | 'dieta' | 'chat'>('treinos');
   const [selectedWorkout, setSelectedWorkout] = useState<'A' | 'B' | 'C' | 'D'>('A');
 
@@ -312,6 +430,315 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
     ? Math.round((completedCount / currentWorkoutList.length) * 100)
     : 0;
 
+  // If user is not logged in, render Login / Signup screen
+  if (!isLoggedIn) {
+    return (
+      <div className="w-full max-w-md mx-auto bg-[#070C16] border border-cyan-900/50 rounded-3xl shadow-2xl overflow-hidden font-sans text-slate-100 p-6 sm:p-8 my-4 animate-fadeIn">
+        {/* Top Header */}
+        <div className="text-center mb-6">
+          <div className="relative inline-block mb-3">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 shadow-xl shadow-cyan-500/30 overflow-hidden mx-auto">
+              <img
+                src="https://i.imgur.com/FVHkZ7T.png"
+                alt="Mário Czarnobai"
+                className="w-full h-full object-cover rounded-[14px]"
+              />
+            </div>
+            <div className="absolute -bottom-1 -right-1 bg-cyan-500 p-1 rounded-full text-black shadow-md">
+              <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
+            </div>
+          </div>
+          <h2 className="text-xl font-extrabold text-white font-display uppercase tracking-wide">
+            Mário Czarnobai
+          </h2>
+          <p className="text-xs text-cyan-400 font-semibold tracking-wider uppercase mt-0.5">
+            Área Exclusiva de Alunos
+          </p>
+        </div>
+
+        {/* Mode Switch (Entrar vs Cadastrar) */}
+        <div className="flex bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 mb-6">
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMode('login');
+              setAuthError('');
+            }}
+            className={`flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+              authMode === 'login'
+                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-black shadow-lg shadow-cyan-500/20'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <LogIn className="w-4 h-4" />
+            Entrar
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMode('signup');
+              setAuthError('');
+            }}
+            className={`flex-1 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+              authMode === 'signup'
+                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-black shadow-lg shadow-cyan-500/20'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <UserPlus className="w-4 h-4" />
+            Cadastrar-se
+          </button>
+        </div>
+
+        {authError && (
+          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2 animate-fadeIn">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>{authError}</span>
+          </div>
+        )}
+
+        {authSuccessMsg && (
+          <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{authSuccessMsg}</span>
+          </div>
+        )}
+
+        {/* FORM: ENTRAR (LOGIN) */}
+        {authMode === 'login' ? (
+          <form onSubmit={handleLoginSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                E-mail ou Usuário
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <input
+                  type="text"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-xs font-semibold text-slate-300">
+                  Senha
+                </label>
+                <button
+                  type="button"
+                  onClick={() => alert('Para redefinir sua senha, entre em contato diretamente pelo WhatsApp com o Mário Czarnobai.')}
+                  className="text-[11px] text-cyan-400 hover:underline"
+                >
+                  Esqueceu a senha?
+                </button>
+              </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-200"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="checkbox"
+                id="remember"
+                defaultChecked
+                className="rounded border-slate-800 bg-slate-900 text-cyan-500 focus:ring-0"
+              />
+              <label htmlFor="remember" className="text-xs text-slate-400 cursor-pointer">
+                Lembrar do meu acesso
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-400 text-black font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 mt-2"
+            >
+              <span>ENTRAR NA MINHA CONTA</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+
+            {/* Quick Demo Access Button */}
+            <div className="pt-3 border-t border-slate-800/80 text-center">
+              <button
+                type="button"
+                onClick={handleQuickDemoLogin}
+                className="w-full py-2.5 rounded-xl bg-cyan-950/50 border border-cyan-800/60 text-cyan-300 font-semibold text-xs hover:bg-cyan-900/50 transition-colors flex items-center justify-center gap-2"
+              >
+                <Sparkles className="w-4 h-4 text-cyan-400" />
+                <span>Entrar como Aluno Demo (Lucas Silva)</span>
+              </button>
+            </div>
+
+            <div className="text-center pt-2">
+              <p className="text-xs text-slate-400">
+                Ainda não tem uma conta?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('signup');
+                    setAuthError('');
+                  }}
+                  className="text-cyan-400 font-bold hover:underline"
+                >
+                  Cadastre-se aqui
+                </button>
+              </p>
+            </div>
+          </form>
+        ) : (
+          /* FORM: CADASTRAR-SE (SIGNUP) */
+          <form onSubmit={handleSignupSubmit} className="space-y-3.5">
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                Nome Completo
+              </label>
+              <div className="relative">
+                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  value={signupName}
+                  onChange={(e) => setSignupName(e.target.value)}
+                  placeholder="Ex: Alexandre Sales"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                E-mail
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <input
+                  type="email"
+                  value={signupEmail}
+                  onChange={(e) => setSignupEmail(e.target.value)}
+                  placeholder="seu.email@exemplo.com"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                WhatsApp / Celular
+              </label>
+              <div className="relative">
+                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <input
+                  type="tel"
+                  value={signupPhone}
+                  onChange={(e) => setSignupPhone(e.target.value)}
+                  placeholder="(00) 90000-0000"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                Objetivo Principal
+              </label>
+              <select
+                value={signupGoal}
+                onChange={(e) => setSignupGoal(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500"
+              >
+                <option value="Hipertrofia & Ganho de Massa">Hipertrofia & Ganho de Massa</option>
+                <option value="Emagrecimento & Queima de Gordura">Emagrecimento & Queima de Gordura</option>
+                <option value="Definição Muscular">Definição Muscular</option>
+                <option value="Condicionamento & Saúde">Condicionamento & Saúde</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  Criar Senha
+                </label>
+                <input
+                  type="password"
+                  value={signupPassword}
+                  onChange={(e) => setSignupPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  Confirmar Senha
+                </label>
+                <input
+                  type="password"
+                  value={signupConfirmPassword}
+                  onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-400 text-black font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 mt-3"
+            >
+              <span>CRIAR CONTA E ENTRAR</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+
+            <div className="text-center pt-2">
+              <p className="text-xs text-slate-400">
+                Já possui uma conta?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('login');
+                    setAuthError('');
+                  }}
+                  className="text-cyan-400 font-bold hover:underline"
+                >
+                  Entre com seu e-mail
+                </button>
+              </p>
+            </div>
+          </form>
+        )}
+
+        {onCloseApp && (
+          <div className="mt-6 pt-4 border-t border-slate-800 text-center">
+            <button
+              type="button"
+              onClick={onCloseApp}
+              className="text-xs text-slate-400 hover:text-white inline-flex items-center gap-1.5 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Voltar ao Site Institucional</span>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-4xl mx-auto bg-[#070C16] border border-cyan-900/50 rounded-3xl shadow-2xl overflow-hidden font-sans text-slate-100 min-h-[750px] flex flex-col">
       {/* Top App Bar Header */}
@@ -328,10 +755,10 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
           )}
 
           <div className="relative">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 shadow-lg shadow-cyan-500/20">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 shadow-lg shadow-cyan-500/20 overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"
-                alt="Lucas Mendes"
+                src={userProfile.photo}
+                alt={userProfile.name}
                 className="w-full h-full object-cover rounded-[14px]"
               />
             </div>
@@ -340,24 +767,33 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
 
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-white text-base">Lucas Mendes</h3>
+              <h3 className="font-bold text-white text-base">{userProfile.name}</h3>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 uppercase">
                 Aluno V.I.P.
               </span>
             </div>
             <p className="text-xs text-slate-400 flex items-center gap-2">
-              <span>Objetivo: Hipertrofia & Definição</span>
+              <span>Objetivo: {userProfile.goal}</span>
               <span className="text-cyan-500 font-bold">• Mário Czarnobai</span>
             </p>
           </div>
         </div>
 
-        {/* Badges and Install Action */}
+        {/* Badges, Logout & Install Action */}
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold text-xs">
             <Flame className="w-4 h-4 fill-amber-400 text-amber-500" />
             <span>{streakDays} dias de ofensiva</span>
           </div>
+
+          <button
+            onClick={handleLogout}
+            title="Sair da Conta"
+            className="p-2.5 rounded-xl bg-slate-900 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-slate-800 transition-colors flex items-center gap-1 text-xs font-semibold"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">Sair</span>
+          </button>
 
           {onOpenInstallModal && (
             <button
