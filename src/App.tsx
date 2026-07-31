@@ -57,9 +57,9 @@ export default function App() {
 
       {/* VIEW MODE: STUDENT APP PORTAL */}
       {viewMode === 'app' ? (
-        <div className="min-h-screen py-2 sm:py-6 px-3 sm:px-4 bg-[#050A12] flex flex-col justify-center animate-fadeIn">
+        <div className="min-h-screen py-3 sm:py-6 px-3 sm:px-4 bg-[#050A12] flex flex-col justify-center animate-fadeIn">
           {/* Clean App Header Bar - Switch to site view */}
-          <div className="max-w-4xl w-full mx-auto mb-2 sm:mb-4 flex items-center justify-between">
+          <div className="max-w-4xl w-full mx-auto mb-3 sm:mb-4 flex items-center justify-between">
             <button
               type="button"
               onClick={() => setViewMode('landing')}

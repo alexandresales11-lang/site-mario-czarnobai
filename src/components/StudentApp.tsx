@@ -779,7 +779,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
   // Render Login / Signup screen if not logged in
   if (!isLoggedIn) {
     return (
-      <div className="w-full max-w-md mx-auto bg-[#070C16] border border-cyan-900/50 rounded-3xl shadow-2xl overflow-hidden font-sans text-slate-100 p-6 sm:p-8 flex flex-col justify-between min-h-[calc(100vh-4rem)] sm:min-h-[640px] my-auto animate-fadeIn">
+      <div className="w-full max-w-md mx-auto bg-[#070C16] border border-cyan-900/50 rounded-3xl shadow-2xl overflow-hidden font-sans text-slate-100 p-6 sm:p-8 my-auto animate-fadeIn">
         {/* Top Header */}
         <div className="text-center mb-6">
           <div className="relative inline-block mb-3">
@@ -1043,19 +1043,6 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
               </p>
             </div>
           </form>
-        )}
-
-        {onCloseApp && (
-          <div className="mt-6 pt-4 border-t border-slate-800 text-center">
-            <button
-              type="button"
-              onClick={onCloseApp}
-              className="text-xs text-slate-400 hover:text-white inline-flex items-center gap-1.5 transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Voltar ao Site Institucional</span>
-            </button>
-          </div>
         )}
       </div>
     );
