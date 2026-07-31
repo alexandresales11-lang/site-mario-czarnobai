@@ -4,7 +4,8 @@ import {
   Droplets, Utensils, MessageSquare, Send, ArrowLeft, Download,
   TrendingDown, Calendar, ChevronRight, RotateCcw, User, Sparkles,
   Smartphone, ShieldCheck, Check, Plus, BarChart2, CheckSquare,
-  Lock, Mail, Phone, Eye, EyeOff, LogOut, UserPlus, LogIn, AlertCircle, ArrowRight
+  Lock, Mail, Phone, Eye, EyeOff, LogOut, UserPlus, LogIn, AlertCircle, ArrowRight,
+  Camera, Upload, X, Image as ImageIcon, Trash2
 } from 'lucide-react';
 
 interface StudentAppProps {
@@ -32,21 +33,245 @@ interface ChatMessage {
   time: string;
 }
 
+interface UserAccount {
+  name: string;
+  email: string;
+  password: string;
+  phone?: string;
+  goal: string;
+  photo: string;
+  streak: number;
+  waterGlasses: number;
+  exercises: Record<string, Exercise[]>;
+  messages: ChatMessage[];
+}
+
+// Clean Default Exercises (All 0% Completed initially)
+const DEFAULT_CLEAN_EXERCISES: Record<string, Exercise[]> = {
+  A: [
+    {
+      id: 'e1',
+      name: 'Supino Inclinado c/ Halteres',
+      muscle: 'Peitoral Superior',
+      sets: '4 séries',
+      reps: '10 - 12 reps',
+      weight: 20,
+      restSeconds: 60,
+      completed: false,
+      notes: 'Manter cotovelos a 45º e escápulas fechadas',
+      image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=400'
+    },
+    {
+      id: 'e2',
+      name: 'Crossover na Polia Alta',
+      muscle: 'Peitoral Inferior / Miolo',
+      sets: '4 séries',
+      reps: '12 - 15 reps',
+      weight: 20,
+      restSeconds: 45,
+      completed: false,
+      notes: 'Pico de contração de 1 seg embaixo',
+      image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=400'
+    },
+    {
+      id: 'e3',
+      name: 'Desenvolvimento c/ Halteres',
+      muscle: 'Ombros (Deltoide Anterior)',
+      sets: '4 séries',
+      reps: '10 reps',
+      weight: 16,
+      restSeconds: 60,
+      completed: false,
+      notes: 'Sem hiperextender a coluna',
+      image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=400'
+    },
+    {
+      id: 'e4',
+      name: 'Elevação Lateral c/ Cabos',
+      muscle: 'Ombros (Lateral)',
+      sets: '4 séries',
+      reps: '15 reps',
+      weight: 10,
+      restSeconds: 45,
+      completed: false,
+      notes: 'Movimento controlado sem usar embalo',
+      image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=400'
+    },
+    {
+      id: 'e5',
+      name: 'Tríceps Corda na Polia',
+      muscle: 'Tríceps',
+      sets: '4 séries',
+      reps: '12 - 15 reps',
+      weight: 25,
+      restSeconds: 45,
+      completed: false,
+      notes: 'Abrir a corda no final do movimento',
+      image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=400'
+    }
+  ],
+  B: [
+    {
+      id: 'eb1',
+      name: 'Puxada Frontal Pegada Aberta',
+      muscle: 'Dorsais (Lats)',
+      sets: '4 séries',
+      reps: '10 - 12 reps',
+      weight: 45,
+      restSeconds: 60,
+      completed: false,
+      image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&q=80&w=400'
+    },
+    {
+      id: 'eb2',
+      name: 'Remada Curvada com Barra',
+      muscle: 'Dorsais / Miolo',
+      sets: '4 séries',
+      reps: '8 - 10 reps',
+      weight: 50,
+      restSeconds: 75,
+      completed: false,
+      image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=400'
+    },
+    {
+      id: 'eb3',
+      name: 'Rosca Direta c/ Barra W',
+      muscle: 'Bíceps',
+      sets: '4 séries',
+      reps: '12 reps',
+      weight: 20,
+      restSeconds: 45,
+      completed: false,
+      image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=400'
+    }
+  ],
+  C: [
+    {
+      id: 'ec1',
+      name: 'Agachamento Livre',
+      muscle: 'Quadríceps & Glúteos',
+      sets: '4 séries',
+      reps: '8 - 10 reps',
+      weight: 70,
+      restSeconds: 90,
+      completed: false,
+      image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=400'
+    },
+    {
+      id: 'ec2',
+      name: 'Leg Press 45º',
+      muscle: 'Quadríceps',
+      sets: '4 séries',
+      reps: '12 - 15 reps',
+      weight: 160,
+      restSeconds: 75,
+      completed: false,
+      image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=400'
+    },
+    {
+      id: 'ec3',
+      name: 'Mesa Flexora',
+      muscle: 'Posterior de Coxa',
+      sets: '4 séries',
+      reps: '12 reps',
+      weight: 35,
+      restSeconds: 60,
+      completed: false,
+      image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=400'
+    }
+  ],
+  D: [
+    {
+      id: 'ed1',
+      name: 'Abdominal Supra c/ Carga',
+      muscle: 'Core / Abdômen',
+      sets: '4 séries',
+      reps: '15 - 20 reps',
+      weight: 10,
+      restSeconds: 45,
+      completed: false,
+      image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=400'
+    },
+    {
+      id: 'ed2',
+      name: 'Prancha Isométrica',
+      muscle: 'Estabilizadores do Core',
+      sets: '3 séries',
+      reps: '60 segundos',
+      weight: 0,
+      restSeconds: 45,
+      completed: false,
+      image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=400'
+    }
+  ]
+};
+
+// Demo User Exercises with sample progress
+const DEMO_EXERCISES = JSON.parse(JSON.stringify(DEFAULT_CLEAN_EXERCISES));
+DEMO_EXERCISES.A[0].completed = true;
+DEMO_EXERCISES.A[0].weight = 28;
+DEMO_EXERCISES.A[1].completed = true;
+DEMO_EXERCISES.A[1].weight = 25;
+
+const getStoredAccounts = (): Record<string, UserAccount> => {
+  const saved = localStorage.getItem('czarnobai_accounts_db_v3');
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      // fallback
+    }
+  }
+  return {
+    'lucas.mendes@email.com': {
+      name: 'Lucas Mendes',
+      email: 'lucas.mendes@email.com',
+      password: '123',
+      goal: 'Hipertrofia & Definição',
+      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
+      streak: 14,
+      waterGlasses: 8,
+      exercises: DEMO_EXERCISES,
+      messages: [
+        {
+          id: 'm1',
+          sender: 'mario',
+          text: 'Fala Lucas! Tudo pronto para o treino de hoje? Qualquer dúvida estou por aqui!',
+          time: '08:30'
+        }
+      ]
+    }
+  };
+};
+
+const saveAccountsToStorage = (accounts: Record<string, UserAccount>) => {
+  localStorage.setItem('czarnobai_accounts_db_v3', JSON.stringify(accounts));
+};
+
 export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstallModal }) => {
-  // Authentication state
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    return localStorage.getItem('czarnobai_logged_in') === 'true';
+  // Database of user accounts
+  const [accountsDb, setAccountsDb] = useState<Record<string, UserAccount>>(() => getStoredAccounts());
+
+  // Current active logged in user email
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>(() => {
+    return localStorage.getItem('czarnobai_current_user_email') || '';
   });
+
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    const savedLogin = localStorage.getItem('czarnobai_logged_in') === 'true';
+    const savedEmail = localStorage.getItem('czarnobai_current_user_email');
+    return savedLogin && !!savedEmail;
+  });
+
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authSuccessMsg, setAuthSuccessMsg] = useState('');
 
-  // Login Form State
+  // Form States
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
-  // Signup Form State
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
@@ -54,293 +279,238 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
   const [signupGoal, setSignupGoal] = useState('Hipertrofia & Definição');
 
-  // User Profile
-  const [userProfile, setUserProfile] = useState<{
-    name: string;
-    email: string;
-    goal: string;
-    photo: string;
-  }>(() => {
-    const saved = localStorage.getItem('czarnobai_user_profile');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        // fallback
-      }
-    }
-    return {
-      name: 'Lucas Mendes',
-      email: 'lucas.mendes@email.com',
-      goal: 'Hipertrofia & Definição',
-      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
-    };
+  // Photo Upload Modal State
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [customPhotoInput, setCustomPhotoInput] = useState('');
+
+  // Active User Account Object
+  const currentAcc = (currentUserEmail && accountsDb[currentUserEmail.toLowerCase()]) || {
+    name: 'Aluno Mário Czarnobai',
+    email: currentUserEmail,
+    password: '',
+    goal: 'Hipertrofia & Definição',
+    photo: '',
+    streak: 0,
+    waterGlasses: 0,
+    exercises: JSON.parse(JSON.stringify(DEFAULT_CLEAN_EXERCISES)),
+    messages: []
+  };
+
+  // Synchronized active state variables
+  const [userProfile, setUserProfile] = useState({
+    name: currentAcc.name,
+    email: currentAcc.email,
+    goal: currentAcc.goal,
+    photo: currentAcc.photo
   });
+  const [streakDays, setStreakDays] = useState(currentAcc.streak);
+  const [waterGlasses, setWaterGlasses] = useState(currentAcc.waterGlasses);
+  const [exercises, setExercises] = useState<Record<string, Exercise[]>>(currentAcc.exercises);
+  const [messages, setMessages] = useState<ChatMessage[]>(currentAcc.messages);
+
+  // Sync state whenever currentUserEmail or accountsDb changes
+  useEffect(() => {
+    if (currentUserEmail && accountsDb[currentUserEmail.toLowerCase()]) {
+      const acc = accountsDb[currentUserEmail.toLowerCase()];
+      setUserProfile({
+        name: acc.name,
+        email: acc.email,
+        goal: acc.goal,
+        photo: acc.photo
+      });
+      setStreakDays(acc.streak);
+      setWaterGlasses(acc.waterGlasses);
+      setExercises(acc.exercises || JSON.parse(JSON.stringify(DEFAULT_CLEAN_EXERCISES)));
+      setMessages(acc.messages || []);
+    }
+  }, [currentUserEmail, isLoggedIn]);
+
+  // Persist state updates to user's account in localStorage
+  const updateCurrentAccountInStorage = (updatedFields: Partial<UserAccount>) => {
+    if (!currentUserEmail) return;
+    const key = currentUserEmail.toLowerCase();
+    setAccountsDb(prev => {
+      const acc = prev[key] || { ...currentAcc };
+      const newAcc = { ...acc, ...updatedFields };
+      const newDb = { ...prev, [key]: newAcc };
+      saveAccountsToStorage(newDb);
+      return newDb;
+    });
+  };
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    if (!loginEmail || !loginPassword) {
+    setAuthSuccessMsg('');
+
+    const cleanInput = loginEmail.trim().toLowerCase();
+    const cleanPass = loginPassword.trim();
+
+    if (!cleanInput || !cleanPass) {
       setAuthError('Por favor, informe seu e-mail ou usuário e a senha.');
       return;
     }
 
-    if (loginPassword.length < 4) {
-      setAuthError('A senha deve conter pelo menos 4 caracteres.');
+    // Find account by email or username
+    const allAccounts = getStoredAccounts();
+    const foundAcc = Object.values(allAccounts).find(
+      a => a.email.toLowerCase() === cleanInput || a.name.toLowerCase().includes(cleanInput)
+    );
+
+    if (!foundAcc) {
+      setAuthError('Conta não encontrada! Verifique o e-mail/usuário ou faça seu cadastro.');
       return;
     }
 
-    const profile = {
-      name: userProfile.name || 'Aluno Mário Czarnobai',
-      email: loginEmail,
-      goal: userProfile.goal || 'Hipertrofia & Definição',
-      photo: userProfile.photo
-    };
+    if (foundAcc.password !== cleanPass) {
+      setAuthError('Senha incorreta! Digite a senha cadastrada para este usuário.');
+      return;
+    }
+
+    // Login Successful
+    const accEmailKey = foundAcc.email.toLowerCase();
     localStorage.setItem('czarnobai_logged_in', 'true');
-    localStorage.setItem('czarnobai_user_profile', JSON.stringify(profile));
-    setUserProfile(profile);
+    localStorage.setItem('czarnobai_current_user_email', accEmailKey);
+    setCurrentUserEmail(accEmailKey);
+    setAccountsDb(allAccounts);
     setIsLoggedIn(true);
   };
 
   const handleSignupSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    if (!signupName || !signupEmail || !signupPassword) {
+    setAuthSuccessMsg('');
+
+    const cleanName = signupName.trim();
+    const cleanEmail = signupEmail.trim().toLowerCase();
+    const cleanPass = signupPassword.trim();
+
+    if (!cleanName || !cleanEmail || !cleanPass) {
       setAuthError('Preencha seu nome, e-mail e crie uma senha.');
       return;
     }
 
-    if (signupPassword !== signupConfirmPassword) {
-      setAuthError('As senhas não coincidem. Verifique e tente novamente.');
+    if (cleanPass.length < 3) {
+      setAuthError('A senha precisa ter pelo menos 3 caracteres.');
       return;
     }
 
-    const newProfile = {
-      name: signupName,
-      email: signupEmail,
+    if (signupPassword !== signupConfirmPassword) {
+      setAuthError('As senhas não coincidem. Digite novamente.');
+      return;
+    }
+
+    const allAccounts = getStoredAccounts();
+    if (allAccounts[cleanEmail]) {
+      setAuthError('Este e-mail já está cadastrado. Entre com suas credenciais na aba Entrar.');
+      return;
+    }
+
+    // Create fresh NEW account (starting 0% completed, no photo)
+    const newAcc: UserAccount = {
+      name: cleanName,
+      email: cleanEmail,
+      password: cleanPass,
+      phone: signupPhone.trim(),
       goal: signupGoal,
-      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
+      photo: '', // Starts completely EMPTY with no photo!
+      streak: 0, // 0 days streak
+      waterGlasses: 0,
+      exercises: JSON.parse(JSON.stringify(DEFAULT_CLEAN_EXERCISES)), // 0% completed
+      messages: [
+        {
+          id: 'm0',
+          sender: 'mario',
+          text: `Seja muito bem-vindo(a) à Consultoria, ${cleanName}! Sou o Mário Czarnobai. Sua ficha de treino para ${signupGoal} está pronta abaixo. Bons treinos!`,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]
     };
 
+    allAccounts[cleanEmail] = newAcc;
+    saveAccountsToStorage(allAccounts);
+    setAccountsDb(allAccounts);
+
     localStorage.setItem('czarnobai_logged_in', 'true');
-    localStorage.setItem('czarnobai_user_profile', JSON.stringify(newProfile));
-    setUserProfile(newProfile);
-    setAuthSuccessMsg('Conta criada com sucesso! Acessando área de membros...');
+    localStorage.setItem('czarnobai_current_user_email', cleanEmail);
+    setCurrentUserEmail(cleanEmail);
+
+    setAuthSuccessMsg('Conta criada com sucesso! Acessando seu perfil do zero...');
     setTimeout(() => {
       setIsLoggedIn(true);
       setAuthSuccessMsg('');
-    }, 800);
+    }, 600);
   };
 
   const handleQuickDemoLogin = () => {
-    const demoProfile = {
-      name: 'Lucas Mendes',
-      email: 'lucas.mendes@email.com',
-      goal: 'Hipertrofia & Definição',
-      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
-    };
+    const allAccounts = getStoredAccounts();
+    const demoKey = 'lucas.mendes@email.com';
+    if (!allAccounts[demoKey]) {
+      allAccounts[demoKey] = {
+        name: 'Lucas Mendes',
+        email: demoKey,
+        password: '123',
+        goal: 'Hipertrofia & Definição',
+        photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
+        streak: 14,
+        waterGlasses: 8,
+        exercises: DEMO_EXERCISES,
+        messages: [
+          { id: 'm1', sender: 'mario', text: 'Fala Lucas! Tudo pronto para o treino?', time: '08:30' }
+        ]
+      };
+      saveAccountsToStorage(allAccounts);
+    }
+
     localStorage.setItem('czarnobai_logged_in', 'true');
-    localStorage.setItem('czarnobai_user_profile', JSON.stringify(demoProfile));
-    setUserProfile(demoProfile);
+    localStorage.setItem('czarnobai_current_user_email', demoKey);
+    setCurrentUserEmail(demoKey);
+    setAccountsDb(allAccounts);
     setIsLoggedIn(true);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('czarnobai_logged_in');
+    localStorage.removeItem('czarnobai_current_user_email');
+    setCurrentUserEmail('');
     setIsLoggedIn(false);
+  };
+
+  // Photo Update Functions
+  const handlePhotoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Foto muito grande! Escolha um arquivo de até 5MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        saveNewPhoto(base64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const saveNewPhoto = (photoUrl: string) => {
+    setUserProfile(prev => ({ ...prev, photo: photoUrl }));
+    updateCurrentAccountInStorage({ photo: photoUrl });
+    setShowPhotoModal(false);
+    setCustomPhotoInput('');
   };
 
   const [activeTab, setActiveTab] = useState<'treinos' | 'evolucao' | 'dieta' | 'chat'>('treinos');
   const [selectedWorkout, setSelectedWorkout] = useState<'A' | 'B' | 'C' | 'D'>('A');
 
-  // Workout state
-  const [exercises, setExercises] = useState<Record<string, Exercise[]>>({
-    A: [
-      {
-        id: 'e1',
-        name: 'Supino Inclinado c/ Halteres',
-        muscle: 'Peitoral Superior',
-        sets: '4 séries',
-        reps: '10 - 12 reps',
-        weight: 28,
-        restSeconds: 60,
-        completed: true,
-        notes: 'Manter cotovelos a 45º e escápulas fechadas',
-        image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=400'
-      },
-      {
-        id: 'e2',
-        name: 'Crossover na Polia Alta',
-        muscle: 'Peitoral Inferior / Miolo',
-        sets: '4 séries',
-        reps: '12 - 15 reps',
-        weight: 25,
-        restSeconds: 45,
-        completed: true,
-        notes: 'Pico de contração de 1 seg embaixo',
-        image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=400'
-      },
-      {
-        id: 'e3',
-        name: 'Desenvolvimento c/ Halteres',
-        muscle: 'Ombros (Deltoide Anterior)',
-        sets: '4 séries',
-        reps: '10 reps',
-        weight: 20,
-        restSeconds: 60,
-        completed: false,
-        notes: 'Sem hiperextender a coluna',
-        image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=400'
-      },
-      {
-        id: 'e4',
-        name: 'Elevação Lateral c/ Cabos',
-        muscle: 'Ombros (Lateral)',
-        sets: '4 séries',
-        reps: '15 reps',
-        weight: 12,
-        restSeconds: 45,
-        completed: false,
-        notes: 'Movimento controlado sem usar embalo',
-        image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=400'
-      },
-      {
-        id: 'e5',
-        name: 'Tríceps Corda na Polia',
-        muscle: 'Tríceps',
-        sets: '4 séries',
-        reps: '12 - 15 reps',
-        weight: 35,
-        restSeconds: 45,
-        completed: false,
-        notes: 'Abrir a corda no final do movimento',
-        image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=400'
-      }
-    ],
-    B: [
-      {
-        id: 'eb1',
-        name: 'Puxada Frontal Pegada Aberta',
-        muscle: 'Dorsais (Lats)',
-        sets: '4 séries',
-        reps: '10 - 12 reps',
-        weight: 55,
-        restSeconds: 60,
-        completed: false,
-        image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&q=80&w=400'
-      },
-      {
-        id: 'eb2',
-        name: 'Remada Curvada com Barra',
-        muscle: 'Dorsais / Miolo',
-        sets: '4 séries',
-        reps: '8 - 10 reps',
-        weight: 60,
-        restSeconds: 75,
-        completed: false,
-        image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=400'
-      },
-      {
-        id: 'eb3',
-        name: 'Rosca Directa c/ Barra W',
-        muscle: 'Bíceps',
-        sets: '4 séries',
-        reps: '12 reps',
-        weight: 24,
-        restSeconds: 45,
-        completed: false,
-        image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=400'
-      }
-    ],
-    C: [
-      {
-        id: 'ec1',
-        name: 'Agachamento Livre',
-        muscle: 'Quadríceps & Glúteos',
-        sets: '4 séries',
-        reps: '8 - 10 reps',
-        weight: 90,
-        restSeconds: 90,
-        completed: false,
-        image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=400'
-      },
-      {
-        id: 'ec2',
-        name: 'Leg Press 45º',
-        muscle: 'Quadríceps',
-        sets: '4 séries',
-        reps: '12 - 15 reps',
-        weight: 220,
-        restSeconds: 75,
-        completed: false,
-        image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=400'
-      },
-      {
-        id: 'ec3',
-        name: 'Mesa Flexora',
-        muscle: 'Posterior de Coxa',
-        sets: '4 séries',
-        reps: '12 reps',
-        weight: 45,
-        restSeconds: 60,
-        completed: false,
-        image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=400'
-      }
-    ],
-    D: [
-      {
-        id: 'ed1',
-        name: 'Abdominal Supra c/ Carga',
-        muscle: 'Core / Abdômen',
-        sets: '4 séries',
-        reps: '15 - 20 reps',
-        weight: 15,
-        restSeconds: 45,
-        completed: false,
-        image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=400'
-      },
-      {
-        id: 'ed2',
-        name: 'Prancha Isométrica',
-        muscle: 'Estabilizadores do Core',
-        sets: '3 séries',
-        reps: '60 segundos',
-        weight: 0,
-        restSeconds: 45,
-        completed: false,
-        image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=400'
-      }
-    ]
-  });
-
   // Timer state
   const [activeTimer, setActiveTimer] = useState<{ exerciseId: string; seconds: number; total: number } | null>(null);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
-  // Water tracker
-  const [waterGlasses, setWaterGlasses] = useState(8); // out of 12 (3000ml)
-  const totalWaterGoal = 12;
-
   // Streak state
-  const [streakDays, setStreakDays] = useState(14);
   const [workoutCompletedToday, setWorkoutCompletedToday] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
-  // Chat messages
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'm1',
-      sender: 'mario',
-      text: 'Fala Lucas! Tudo pronto para o treino de hoje? Atualizei sua ficha com o aumento de carga no Supino Inclinado. Qualquer dúvida me manda áudio ou mensagem por aqui!',
-      time: '08:30'
-    },
-    {
-      id: 'm2',
-      sender: 'user',
-      text: 'Opa Mário, valeu! Vou fazer o Treino A hoje no fim da tarde.',
-      time: '09:15'
-    }
-  ]);
   const [inputMsg, setInputMsg] = useState('');
 
   // Handle rest timer countdown
@@ -358,17 +528,21 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
 
   const toggleExercise = (id: string) => {
     setExercises((prev) => {
-      const currentList = prev[selectedWorkout];
+      const currentList = prev[selectedWorkout] || [];
       const updated = currentList.map((ex) => (ex.id === id ? { ...ex, completed: !ex.completed } : ex));
-      return { ...prev, [selectedWorkout]: updated };
+      const newExercises = { ...prev, [selectedWorkout]: updated };
+      updateCurrentAccountInStorage({ exercises: newExercises });
+      return newExercises;
     });
   };
 
   const handleWeightChange = (id: string, newWeight: number) => {
     setExercises((prev) => {
-      const currentList = prev[selectedWorkout];
+      const currentList = prev[selectedWorkout] || [];
       const updated = currentList.map((ex) => (ex.id === id ? { ...ex, weight: newWeight } : ex));
-      return { ...prev, [selectedWorkout]: updated };
+      const newExercises = { ...prev, [selectedWorkout]: updated };
+      updateCurrentAccountInStorage({ exercises: newExercises });
+      return newExercises;
     });
   };
 
@@ -383,7 +557,9 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
 
   const handleCompleteWorkout = () => {
     setWorkoutCompletedToday(true);
-    setStreakDays((prev) => prev + 1);
+    const newStreak = streakDays + 1;
+    setStreakDays(newStreak);
+    updateCurrentAccountInStorage({ streak: newStreak });
     setShowCelebration(true);
   };
 
@@ -398,7 +574,9 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    const newMsgs = [...messages, userMsg];
+    setMessages(newMsgs);
+    updateCurrentAccountInStorage({ messages: newMsgs });
     if (!textToSend) setInputMsg('');
 
     // Simulate Mário reply after 1.2s
@@ -409,28 +587,30 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
       } else if (msgText.toLowerCase().includes('carga') || msgText.toLowerCase().includes('peso')) {
         replyText += 'Show! Pode registrar no aplicativo a carga que você conseguiu realizar com boa técnica. Se fizer mais de 12 repetições, pode subir 2kg no próximo treino!';
       } else {
-        replyText += 'Acompanhando seu treino aqui no sistema! Mantenha a cadência 2x2 e lembre de registrar sua água hoje. Tamo junto!';
+        replyText += 'Recebi seu recado! Continue focado na execução dos movimentos e lembre-se da hidratação durante o treino.';
       }
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          sender: 'mario',
-          text: replyText,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]);
+      const marioMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        sender: 'mario',
+        text: replyText,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages(prev => {
+        const updated = [...prev, marioMsg];
+        updateCurrentAccountInStorage({ messages: updated });
+        return updated;
+      });
     }, 1200);
   };
 
   const currentWorkoutList = exercises[selectedWorkout] || [];
   const completedCount = currentWorkoutList.filter((e) => e.completed).length;
-  const progressPercent = currentWorkoutList.length
+  const progressPercent = currentWorkoutList.length > 0
     ? Math.round((completedCount / currentWorkoutList.length) * 100)
     : 0;
 
-  // If user is not logged in, render Login / Signup screen
+  // Render Login / Signup screen if not logged in
   if (!isLoggedIn) {
     return (
       <div className="w-full max-w-md mx-auto bg-[#070C16] border border-cyan-900/50 rounded-3xl shadow-2xl overflow-hidden font-sans text-slate-100 p-6 sm:p-8 my-4 animate-fadeIn">
@@ -530,7 +710,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
                 </label>
                 <button
                   type="button"
-                  onClick={() => alert('Para redefinir sua senha, entre em contato diretamente pelo WhatsApp com o Mário Czarnobai.')}
+                  onClick={() => alert('Para redefinir sua senha, solicite pelo suporte do WhatsApp com Mário Czarnobai.')}
                   className="text-[11px] text-cyan-400 hover:underline"
                 >
                   Esqueceu a senha?
@@ -555,18 +735,6 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-1">
-              <input
-                type="checkbox"
-                id="remember"
-                defaultChecked
-                className="rounded border-slate-800 bg-slate-900 text-cyan-500 focus:ring-0"
-              />
-              <label htmlFor="remember" className="text-xs text-slate-400 cursor-pointer">
-                Lembrar do meu acesso
-              </label>
-            </div>
-
             <button
               type="submit"
               className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-400 text-black font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 mt-2"
@@ -583,7 +751,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
                 className="w-full py-2.5 rounded-xl bg-cyan-950/50 border border-cyan-800/60 text-cyan-300 font-semibold text-xs hover:bg-cyan-900/50 transition-colors flex items-center justify-center gap-2"
               >
                 <Sparkles className="w-4 h-4 text-cyan-400" />
-                <span>Entrar como Aluno Demo (Lucas Silva)</span>
+                <span>Testar como Aluno Demo (Lucas Mendes)</span>
               </button>
             </div>
 
@@ -648,7 +816,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
                   type="tel"
                   value={signupPhone}
                   onChange={(e) => setSignupPhone(e.target.value)}
-                  placeholder="(00) 90000-0000"
+                  placeholder="(74) 90000-0000"
                   className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
                 />
               </div>
@@ -663,9 +831,9 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
                 onChange={(e) => setSignupGoal(e.target.value)}
                 className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500"
               >
-                <option value="Hipertrofia & Ganho de Massa">Hipertrofia & Ganho de Massa</option>
+                <option value="Hipertrofia & Definição">Hipertrofia & Definição</option>
                 <option value="Emagrecimento & Queima de Gordura">Emagrecimento & Queima de Gordura</option>
-                <option value="Definição Muscular">Definição Muscular</option>
+                <option value="Ganho de Massa Muscular">Ganho de Massa Muscular</option>
                 <option value="Condicionamento & Saúde">Condicionamento & Saúde</option>
               </select>
             </div>
@@ -701,7 +869,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
               type="submit"
               className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-400 text-black font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 mt-3"
             >
-              <span>CRIAR CONTA E ENTRAR</span>
+              <span>CRIAR CONTA E ACESSAR</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
@@ -740,7 +908,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-[#070C16] border border-cyan-900/50 rounded-3xl shadow-2xl overflow-hidden font-sans text-slate-100 min-h-[750px] flex flex-col">
+    <div className="w-full max-w-4xl mx-auto bg-[#070C16] border border-cyan-900/50 rounded-3xl shadow-2xl overflow-hidden font-sans text-slate-100 min-h-[750px] flex flex-col relative">
       {/* Top App Bar Header */}
       <div className="bg-gradient-to-r from-[#0C172B] via-[#08101E] to-[#0C172B] border-b border-cyan-900/40 p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -754,15 +922,30 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
             </button>
           )}
 
-          <div className="relative">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 shadow-lg shadow-cyan-500/20 overflow-hidden">
-              <img
-                src={userProfile.photo}
-                alt={userProfile.name}
-                className="w-full h-full object-cover rounded-[14px]"
-              />
+          {/* User Profile Avatar with Edit Photo Modal Trigger */}
+          <div
+            className="relative group cursor-pointer"
+            onClick={() => setShowPhotoModal(true)}
+            title="Clique para alterar foto de perfil"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 shadow-lg shadow-cyan-500/20 overflow-hidden flex items-center justify-center bg-slate-900">
+              {userProfile.photo ? (
+                <img
+                  src={userProfile.photo}
+                  alt={userProfile.name}
+                  className="w-full h-full object-cover rounded-[14px]"
+                />
+              ) : (
+                <div className="w-full h-full rounded-[14px] bg-slate-800 flex items-center justify-center text-cyan-400 font-extrabold text-sm border border-cyan-500/30">
+                  {userProfile.name
+                    ? userProfile.name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+                    : 'AL'}
+                </div>
+              )}
             </div>
-            <div className="absolute -bottom-1 -right-1 bg-emerald-500 w-3.5 h-3.5 rounded-full border-2 border-[#070C16]" title="Online"></div>
+            <div className="absolute -bottom-1 -right-1 bg-cyan-500 text-black p-1 rounded-full shadow border border-[#070C16] hover:scale-110 transition-transform">
+              <Camera className="w-3 h-3 stroke-[2.5]" />
+            </div>
           </div>
 
           <div>
@@ -772,10 +955,16 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
                 Aluno V.I.P.
               </span>
             </div>
-            <p className="text-xs text-slate-400 flex items-center gap-2">
-              <span>Objetivo: {userProfile.goal}</span>
-              <span className="text-cyan-500 font-bold">• Mário Czarnobai</span>
-            </p>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-slate-400">Objetivo: {userProfile.goal}</span>
+              <button
+                onClick={() => setShowPhotoModal(true)}
+                className="text-[11px] text-cyan-400 font-semibold hover:underline flex items-center gap-1"
+              >
+                <Camera className="w-3 h-3" />
+                <span>Foto</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -786,13 +975,14 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
             <span>{streakDays} dias de ofensiva</span>
           </div>
 
+          {/* LOGOUT BUTTON - Explicit "SAIR" Button */}
           <button
             onClick={handleLogout}
             title="Sair da Conta"
-            className="p-2.5 rounded-xl bg-slate-900 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-slate-800 transition-colors flex items-center gap-1 text-xs font-semibold"
+            className="px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition-all flex items-center gap-1.5 text-xs font-bold shadow-md shrink-0 cursor-pointer"
           >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Sair</span>
+            <LogOut className="w-4 h-4 text-rose-400 stroke-[2.5]" />
+            <span className="text-rose-200 font-bold">Sair</span>
           </button>
 
           {onOpenInstallModal && (
@@ -807,6 +997,88 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
           )}
         </div>
       </div>
+
+      {/* PHOTO UPLOAD / EDIT MODAL */}
+      {showPhotoModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-[#0C172B] border border-cyan-500/30 rounded-3xl max-w-sm w-full p-6 relative text-slate-100 shadow-2xl">
+            <button
+              onClick={() => setShowPhotoModal(false)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="text-center mb-5">
+              <div className="w-20 h-20 rounded-2xl bg-slate-800 border-2 border-cyan-500/50 mx-auto mb-3 overflow-hidden flex items-center justify-center">
+                {userProfile.photo ? (
+                  <img src={userProfile.photo} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-10 h-10 text-cyan-400" />
+                )}
+              </div>
+              <h3 className="text-lg font-bold text-white">Alterar Foto de Perfil</h3>
+              <p className="text-xs text-slate-400">Escolha uma foto do seu celular ou insira um link</p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Option 1: Choose File */}
+              <div>
+                <label className="block text-xs font-semibold text-cyan-400 mb-1">
+                  1. Escolher imagem do celular / PC
+                </label>
+                <label className="flex items-center justify-center gap-2 w-full py-3 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 rounded-xl text-cyan-300 font-bold text-xs cursor-pointer transition-colors">
+                  <Upload className="w-4 h-4" />
+                  <span>Selecionar Foto do Dispositivo</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoFileUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              {/* Option 2: Image URL */}
+              <div>
+                <label className="block text-xs font-semibold text-cyan-400 mb-1">
+                  2. Ou colar link de imagem (URL)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={customPhotoInput}
+                    onChange={(e) => setCustomPhotoInput(e.target.value)}
+                    placeholder="https://exemplo.com/minha-foto.jpg"
+                    className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                  />
+                  <button
+                    onClick={() => {
+                      if (customPhotoInput.trim()) {
+                        saveNewPhoto(customPhotoInput.trim());
+                      }
+                    }}
+                    className="px-3 py-2 bg-cyan-500 text-black font-bold text-xs rounded-xl hover:bg-cyan-400"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              </div>
+
+              {/* Option 3: Remove Photo */}
+              {userProfile.photo && (
+                <button
+                  onClick={() => saveNewPhoto('')}
+                  className="w-full py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 font-semibold text-xs flex items-center justify-center gap-2 hover:bg-rose-500/20 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Remover Foto Atual</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navigation Sub-Tabs inside the App */}
       <div className="flex border-b border-cyan-900/30 bg-[#091222] px-4 pt-2 overflow-x-auto no-scrollbar">
@@ -1188,7 +1460,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
 
               {/* Water Cups */}
               <div className="grid grid-cols-6 sm:grid-cols-12 gap-2">
-                {Array.from({ length: totalWaterGoal }).map((_, i) => (
+                {Array.from({ length: 12 }).map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setWaterGlasses(i < waterGlasses ? i : i + 1)}
