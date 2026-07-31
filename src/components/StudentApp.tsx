@@ -461,7 +461,24 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
       setExercises(acc.exercises || JSON.parse(JSON.stringify(DEFAULT_CLEAN_EXERCISES)));
       setMessages(acc.messages || []);
     }
-  }, [currentUserEmail, isLoggedIn]);
+  }, [currentUserEmail, isLoggedIn, accountsDb]);
+
+  // Real-time synchronization across browser tabs and windows
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const latestAccounts = getStoredAccounts();
+      setAccountsDb(latestAccounts);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    // Poll every 1 second to handle same-window / iframe storage updates instantly
+    const intervalId = setInterval(handleStorageChange, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(intervalId);
+    };
+  }, []);
 
   // Persist state updates to user's account in localStorage
   const updateCurrentAccountInStorage = (updatedFields: Partial<UserAccount>) => {
@@ -903,11 +920,36 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
 
             <button
               type="submit"
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-400 text-black font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 mt-2"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-400 text-black font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer"
             >
               <span>ENTRAR NA MINHA CONTA</span>
               <ArrowRight className="w-4 h-4" />
             </button>
+
+            {/* Quick Demo Access Buttons for Real-time Testing */}
+            <div className="pt-3 border-t border-slate-800/80 space-y-2">
+              <span className="block text-[11px] font-bold text-slate-400 text-center uppercase tracking-wider">
+                ⚡ Acesso Rápido de Teste
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={handleQuickAdminLogin}
+                  className="px-3 py-2 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Entrar p/ Mário (ADM)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleQuickAlexandreLogin}
+                  className="px-3 py-2 rounded-xl bg-blue-950/80 hover:bg-blue-900 border border-blue-500/40 text-blue-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <User className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Entrar p/ Alexandre</span>
+                </button>
+              </div>
+            </div>
 
             <div className="text-center pt-2">
               <p className="text-xs text-slate-400">
