@@ -7,6 +7,7 @@ import {
   Lock, Mail, Phone, Eye, EyeOff, LogOut, UserPlus, LogIn, AlertCircle, ArrowRight,
   Camera, Upload, X, Image as ImageIcon, Trash2
 } from 'lucide-react';
+import { AdminPanel, DietPlan } from './AdminPanel';
 
 interface StudentAppProps {
   onCloseApp?: () => void;
@@ -44,6 +45,13 @@ interface UserAccount {
   waterGlasses: number;
   exercises: Record<string, Exercise[]>;
   messages: ChatMessage[];
+  planName?: string;
+  paymentStatus?: 'pago' | 'pendente' | 'vencendo';
+  paymentDueDate?: string;
+  dietPlan?: DietPlan;
+  marioNotes?: string;
+  statusBadge?: 'focado' | 'inconstante' | 'atencao';
+  isAdmin?: boolean;
 }
 
 // Clean Default Exercises (All 0% Completed initially)
@@ -215,23 +223,121 @@ DEMO_EXERCISES.A[1].weight = 25;
 
 const getStoredAccounts = (): Record<string, UserAccount> => {
   const saved = localStorage.getItem('czarnobai_accounts_db_v3');
+  let loadedAccounts: Record<string, UserAccount> = {};
   if (saved) {
     try {
-      return JSON.parse(saved);
+      loadedAccounts = JSON.parse(saved);
     } catch (e) {
       // fallback
     }
   }
-  return {
-    'lucas.mendes@email.com': {
-      name: 'Lucas Mendes',
-      email: 'lucas.mendes@email.com',
+
+  // Ensure Admin Personal Mario Czarnobai account always exists
+  const marioEmail = 'mario@czarnobai.com';
+  if (!loadedAccounts[marioEmail]) {
+    loadedAccounts[marioEmail] = {
+      name: 'Mário Czarnobai',
+      email: marioEmail,
+      password: 'admin',
+      phone: '(41) 99999-0000',
+      goal: 'Personal Trainer & Head Coach',
+      photo: 'https://i.imgur.com/FVHkZ7T.png',
+      streak: 365,
+      waterGlasses: 12,
+      exercises: DEFAULT_CLEAN_EXERCISES,
+      messages: [],
+      isAdmin: true,
+      planName: 'Coordenador & Personal'
+    };
+  } else {
+    loadedAccounts[marioEmail].isAdmin = true;
+  }
+
+  // Ensure Alexandre Sales account exists
+  const alexandreEmail = 'alexandre.sales@email.com';
+  if (!loadedAccounts[alexandreEmail]) {
+    loadedAccounts[alexandreEmail] = {
+      name: 'Alexandre Sales',
+      email: alexandreEmail,
       password: '123',
+      phone: '(74) 99812-3456',
       goal: 'Hipertrofia & Definição',
       photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
+      streak: 12,
+      waterGlasses: 9,
+      exercises: DEMO_EXERCISES,
+      planName: 'Consultoria V.I.P. Trimestral',
+      paymentStatus: 'pago',
+      paymentDueDate: '15/09/2026',
+      statusBadge: 'focado',
+      marioNotes: 'Aluno extremamente focado. Ótima evolução no supino e agachamento. Manter carga progressiva.',
+      dietPlan: {
+        calories: 2600,
+        proteinGrams: 180,
+        carbsGrams: 260,
+        fatGrams: 65,
+        meals: [
+          {
+            id: 'm1',
+            time: '08:00',
+            title: 'Refeição 1 (Café da Manhã)',
+            description: '3 Ovos inteiros + 60g de Aveia + 1 Banana + Café sem açúcar'
+          },
+          {
+            id: 'm2',
+            time: '12:30',
+            title: 'Refeição 2 (Almoço)',
+            description: '180g de Filé de Frango Grelhado + 150g de Arroz integral + Salada verde à vontade'
+          },
+          {
+            id: 'm3',
+            time: '16:30',
+            title: 'Refeição 3 (Pré-Treino)',
+            description: '200g de Batata Doce + 150g de Frango desfiado ou 30g de Whey'
+          },
+          {
+            id: 'm4',
+            time: '20:30',
+            title: 'Refeição 4 (Jantar pós-treino)',
+            description: '200g de Patinho moído + 150g de Arroz + Salada com azeite de oliva'
+          }
+        ],
+        supplementation: 'Creatina 5g pós-treino + Whey Protein 30g + Multivitamínico'
+      },
+      messages: [
+        {
+          id: 'm1',
+          sender: 'mario',
+          text: 'Fala Alexandre! Atualizei sua ficha com os novos aumentos de carga no Supino Inclinado e Leg Press. Dá uma olhada e me avisa se tiver qualquer dúvida!',
+          time: '08:30'
+        },
+        {
+          id: 'm2',
+          sender: 'user',
+          text: 'Show Mário, vi aqui! Vou mandar ver no treino A hoje a tarde. Tamo junto!',
+          time: '09:15'
+        }
+      ]
+    };
+  }
+
+  // Ensure Lucas Mendes account exists
+  const lucasEmail = 'lucas.mendes@email.com';
+  if (!loadedAccounts[lucasEmail]) {
+    loadedAccounts[lucasEmail] = {
+      name: 'Lucas Mendes',
+      email: lucasEmail,
+      password: '123',
+      phone: '(11) 98765-4321',
+      goal: 'Hipertrofia & Definição',
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
       streak: 14,
       waterGlasses: 8,
       exercises: DEMO_EXERCISES,
+      planName: 'Consultoria V.I.P. Mensal',
+      paymentStatus: 'pago',
+      paymentDueDate: '10/08/2026',
+      statusBadge: 'focado',
       messages: [
         {
           id: 'm1',
@@ -240,8 +346,39 @@ const getStoredAccounts = (): Record<string, UserAccount> => {
           time: '08:30'
         }
       ]
-    }
-  };
+    };
+  }
+
+  // Ensure Mariana Costa (Aluno em inconstância) account exists
+  const marianaEmail = 'mariana.costa@email.com';
+  if (!loadedAccounts[marianaEmail]) {
+    loadedAccounts[marianaEmail] = {
+      name: 'Mariana Costa',
+      email: marianaEmail,
+      password: '123',
+      phone: '(21) 97123-8899',
+      goal: 'Tonificação & Perda de Gordura',
+      photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+      streak: 0,
+      waterGlasses: 2,
+      exercises: DEFAULT_CLEAN_EXERCISES,
+      planName: 'Acompanhamento Mensal',
+      paymentStatus: 'pendente',
+      paymentDueDate: '30/07/2026',
+      statusBadge: 'inconstante',
+      marioNotes: 'Faltou aos treinos nos últimos 3 dias. Necessita de cobrança sobre hidratação e constância.',
+      messages: [
+        {
+          id: 'm1',
+          sender: 'mario',
+          text: 'Oi Mariana! Notei que não registrou seu treino ontem. Ficou alguma dúvida na ficha? Posso adaptar se precisar!',
+          time: '18:00'
+        }
+      ]
+    };
+  }
+
+  return loadedAccounts;
 };
 
 const saveAccountsToStorage = (accounts: Record<string, UserAccount>) => {
@@ -440,6 +577,26 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
       setIsLoggedIn(true);
       setAuthSuccessMsg('');
     }, 600);
+  };
+
+  const handleQuickAdminLogin = () => {
+    const allAccounts = getStoredAccounts();
+    const marioKey = 'mario@czarnobai.com';
+    localStorage.setItem('czarnobai_logged_in', 'true');
+    localStorage.setItem('czarnobai_current_user_email', marioKey);
+    setCurrentUserEmail(marioKey);
+    setAccountsDb(allAccounts);
+    setIsLoggedIn(true);
+  };
+
+  const handleQuickAlexandreLogin = () => {
+    const allAccounts = getStoredAccounts();
+    const alexandreKey = 'alexandre.sales@email.com';
+    localStorage.setItem('czarnobai_logged_in', 'true');
+    localStorage.setItem('czarnobai_current_user_email', alexandreKey);
+    setCurrentUserEmail(alexandreKey);
+    setAccountsDb(allAccounts);
+    setIsLoggedIn(true);
   };
 
   const handleQuickDemoLogin = () => {
@@ -743,16 +900,36 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
               <ArrowRight className="w-4 h-4" />
             </button>
 
-            {/* Quick Demo Access Button */}
-            <div className="pt-3 border-t border-slate-800/80 text-center">
+            {/* Quick Demo & Admin Access Buttons */}
+            <div className="pt-3 border-t border-slate-800/80 space-y-2 text-center">
               <button
                 type="button"
-                onClick={handleQuickDemoLogin}
-                className="w-full py-2.5 rounded-xl bg-cyan-950/50 border border-cyan-800/60 text-cyan-300 font-semibold text-xs hover:bg-cyan-900/50 transition-colors flex items-center justify-center gap-2"
+                onClick={handleQuickAdminLogin}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-cyan-500/20 border border-cyan-400/50 text-cyan-300 font-extrabold text-xs hover:bg-cyan-900/40 transition-all flex items-center justify-center gap-2 shadow-lg hover:scale-[1.01]"
               >
-                <Sparkles className="w-4 h-4 text-cyan-400" />
-                <span>Testar como Aluno Demo (Lucas Mendes)</span>
+                <ShieldCheck className="w-4 h-4 text-cyan-400 stroke-[2.5]" />
+                <span>PAINEL DO PERSONAL (Acesso Mário Czarnobai)</span>
               </button>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={handleQuickAlexandreLogin}
+                  className="py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 font-bold text-[11px] hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Aluno Alexandre</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleQuickDemoLogin}
+                  className="py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-semibold text-[11px] hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <User className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Aluno Lucas</span>
+                </button>
+              </div>
             </div>
 
             <div className="text-center pt-2">
@@ -907,8 +1084,49 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
     );
   }
 
+  // Render Admin Panel for Personal Trainer Mário
+  if (currentAcc.isAdmin) {
+    return (
+      <AdminPanel
+        accountsDb={accountsDb}
+        onUpdateAccounts={(updatedDb) => {
+          setAccountsDb(updatedDb);
+          saveAccountsToStorage(updatedDb);
+        }}
+        onLogoutAdmin={handleLogout}
+        onSwitchToStudentView={(studentEmail) => {
+          setCurrentUserEmail(studentEmail.toLowerCase());
+        }}
+        onCloseApp={onCloseApp}
+      />
+    );
+  }
+
   return (
     <div className="w-full max-w-4xl mx-auto bg-[#070C16] border border-cyan-900/50 rounded-3xl shadow-2xl overflow-hidden font-sans text-slate-100 min-h-[750px] flex flex-col relative">
+      {/* Admin Mode Quick Switch Banner */}
+      {accountsDb['mario@czarnobai.com'] && (
+        <div className="bg-gradient-to-r from-cyan-950 via-[#0C172B] to-cyan-950 border-b border-cyan-500/30 px-4 py-2 text-center flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-cyan-300">
+          <div className="flex flex-wrap items-center justify-between w-full">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span>Você está visualizando o app do aluno: <strong className="text-white">{userProfile.name}</strong></span>
+              {currentAcc.planName && (
+                <span className="hidden sm:inline px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[10px] font-bold border border-cyan-500/40">
+                  {currentAcc.planName}
+                </span>
+              )}
+            </span>
+            <button
+              onClick={() => setCurrentUserEmail('mario@czarnobai.com')}
+              className="px-3 py-1 rounded-xl bg-cyan-500 text-black font-extrabold text-[10px] uppercase hover:bg-cyan-400 transition-colors shadow-md"
+            >
+              👑 Painel Admin do Personal Mário
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top App Bar Header */}
       <div className="bg-gradient-to-r from-[#0C172B] via-[#08101E] to-[#0C172B] border-b border-cyan-900/40 p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -1479,57 +1697,72 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
             </div>
 
             {/* Macros summary */}
-            <div className="p-5 rounded-2xl bg-[#0B1324] border border-slate-800 space-y-4">
-              <h4 className="font-bold text-sm text-white flex items-center gap-2">
-                <Utensils className="w-4 h-4 text-cyan-400" />
-                Macronutrientes Prescritos pelo Mário
-              </h4>
+            {(() => {
+              const activeDiet = currentAcc.dietPlan || {
+                calories: 2600,
+                proteinGrams: 180,
+                carbsGrams: 210,
+                fatGrams: 55,
+                meals: [
+                  { id: 'm1', time: '08:00', title: 'Refeição 1 (Café da Manhã)', description: '3 Ovos inteiros + 60g de Aveia + 1 Banana + Café sem açúcar' },
+                  { id: 'm2', time: '12:30', title: 'Refeição 2 (Almoço)', description: '180g de Filé de Frango Grelhado + 150g de Arroz + Salada verde à vontade' },
+                  { id: 'm3', time: '16:30', title: 'Refeição 3 (Pré-Treino)', description: '30g Whey Protein + 150g Doce de Leite ou Maçã + 3g Creatina' }
+                ],
+                supplementation: 'Creatina 5g pós-treino + Whey Protein 30g'
+              };
 
-              <div className="grid grid-cols-3 gap-3">
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
-                  <span className="text-xs text-slate-400">Proteína</span>
-                  <p className="text-lg font-extrabold text-cyan-400 mt-1">180g</p>
-                  <span className="text-[10px] text-slate-500">2.2g / kg</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
-                  <span className="text-xs text-slate-400">Carboidratos</span>
-                  <p className="text-lg font-extrabold text-amber-400 mt-1">210g</p>
-                  <span className="text-[10px] text-slate-500">Ciclo de Carbos</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
-                  <span className="text-xs text-slate-400">Gorduras</span>
-                  <p className="text-lg font-extrabold text-emerald-400 mt-1">55g</p>
-                  <span className="text-[10px] text-slate-500">Gorduras boas</span>
-                </div>
-              </div>
-
-              {/* Meals schedule */}
-              <div className="space-y-3 pt-2">
-                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-cyan-400">Refeição 1 (Café da Manhã) • 08:00</span>
-                    <p className="text-xs text-slate-200 mt-0.5">3 Ovos inteiros + 60g de Aveia + 1 Banana + Café sem açúcar</p>
+              return (
+                <div className="p-5 rounded-2xl bg-[#0B1324] border border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-sm text-white flex items-center gap-2">
+                      <Utensils className="w-4 h-4 text-cyan-400" />
+                      Macronutrientes Prescritos pelo Mário
+                    </h4>
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                      {activeDiet.calories} kcal / dia
+                    </span>
                   </div>
-                  <Check className="w-5 h-5 text-emerald-400 shrink-0" />
-                </div>
 
-                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-cyan-400">Refeição 2 (Almoço) • 12:30</span>
-                    <p className="text-xs text-slate-200 mt-0.5">180g de Filé de Frango Grelhado + 150g de Arroz + Salada verde à vontade</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
+                      <span className="text-xs text-slate-400">Proteína</span>
+                      <p className="text-lg font-extrabold text-cyan-400 mt-1">{activeDiet.proteinGrams}g</p>
+                      <span className="text-[10px] text-slate-500">Massa Magra</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
+                      <span className="text-xs text-slate-400">Carboidratos</span>
+                      <p className="text-lg font-extrabold text-amber-400 mt-1">{activeDiet.carbsGrams}g</p>
+                      <span className="text-[10px] text-slate-500">Energia</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
+                      <span className="text-xs text-slate-400">Gorduras</span>
+                      <p className="text-lg font-extrabold text-emerald-400 mt-1">{activeDiet.fatGrams}g</p>
+                      <span className="text-[10px] text-slate-500">Hormonal</span>
+                    </div>
                   </div>
-                  <Check className="w-5 h-5 text-emerald-400 shrink-0" />
-                </div>
 
-                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-amber-400">Refeição 3 (Pré-Treino) • 16:30</span>
-                    <p className="text-xs text-slate-200 mt-0.5">30g Whey Protein + 150g Doce de Leite ou Maçã + 3g Creatina</p>
+                  {activeDiet.supplementation && (
+                    <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/20 text-xs text-cyan-300 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
+                      <span><strong>Suplementação:</strong> {activeDiet.supplementation}</span>
+                    </div>
+                  )}
+
+                  {/* Meals schedule */}
+                  <div className="space-y-2.5 pt-2">
+                    {activeDiet.meals.map((meal) => (
+                      <div key={meal.id} className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-3">
+                        <div>
+                          <span className="text-xs font-bold text-cyan-400">{meal.title} • {meal.time}</span>
+                          <p className="text-xs text-slate-200 mt-0.5">{meal.description}</p>
+                        </div>
+                        <Check className="w-5 h-5 text-emerald-400 shrink-0" />
+                      </div>
+                    ))}
                   </div>
-                  <Circle className="w-5 h-5 text-slate-600 shrink-0" />
                 </div>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         )}
 
