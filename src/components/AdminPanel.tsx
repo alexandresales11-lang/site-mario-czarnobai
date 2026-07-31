@@ -79,7 +79,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 }) => {
   // Filter & Search State
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'alert' | 'pending_payment' | 'focused'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'chat' | 'paid' | 'pending_payment' | 'focused' | 'alert'>('all');
 
   // Currently Selected Student for Detailed Editing
   const [selectedStudentEmail, setSelectedStudentEmail] = useState<string | null>(null);
@@ -114,9 +114,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Stats Counters
   const totalStudents = studentList.length;
   const paidStudents = studentList.filter((s: UserAccount) => s.paymentStatus !== 'pendente').length;
+  const pendingStudents = studentList.filter((s: UserAccount) => s.paymentStatus === 'pendente').length;
+  const focusedStudents = studentList.filter(
+    (s: UserAccount) => s.statusBadge === 'focado' || s.streak > 3
+  ).length;
   const alertStudents = studentList.filter(
     (s: UserAccount) => s.statusBadge === 'inconstante' || s.statusBadge === 'atencao' || s.streak === 0
   ).length;
+
+  // Handler to switch filters and clear selected student if currently viewing a single student profile
+  const handleSelectFilter = (type: 'all' | 'chat' | 'paid' | 'pending_payment' | 'focused' | 'alert') => {
+    setFilterType(type);
+    if (selectedStudentEmail) {
+      setSelectedStudentEmail(null);
+    }
+  };
 
   // Filtered Student List
   const filteredStudents = studentList.filter((student: UserAccount) => {
@@ -133,8 +145,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (filterType === 'pending_payment') {
       return student.paymentStatus === 'pendente';
     }
+    if (filterType === 'paid') {
+      return student.paymentStatus !== 'pendente';
+    }
     if (filterType === 'focused') {
       return student.statusBadge === 'focado' || student.streak > 3;
+    }
+    if (filterType === 'chat') {
+      return true;
     }
 
     return true;
@@ -551,8 +569,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
             <p className="text-xs text-cyan-400 font-medium mt-0.5 flex flex-wrap items-center gap-2">
               <span>CREF 049281-G/PR</span>
-              <span className="text-slate-600">•</span>
-              <span className="text-slate-300">Gestão Exclusiva de Alunos</span>
             </p>
           </div>
         </div>
@@ -561,7 +577,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
             onClick={() => setShowAddStudentModal(true)}
-            className="flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all"
+            className="flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>Novo Aluno</span>
@@ -569,7 +585,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
           <button
             onClick={onLogoutAdmin}
-            className="p-2 sm:p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition-colors flex items-center gap-1.5 text-xs font-bold"
+            className="p-2 sm:p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition-colors flex items-center gap-1.5 text-xs font-bold cursor-pointer"
             title="Sair da Conta Admin"
           >
             <LogOut className="w-4 h-4 text-rose-400" />
@@ -578,45 +594,117 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
       </div>
 
-      {/* KPI Dashboard Overview Widgets */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 sm:p-6 bg-[#08101E] border-b border-slate-800">
-        <div className="p-4 rounded-2xl bg-[#0C172B] border border-slate-800 space-y-1">
+      {/* KPI Dashboard Overview Widgets - 6 Quadros Clicáveis */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 p-4 sm:p-6 bg-[#08101E] border-b border-slate-800">
+        {/* Quadro 1: Superior Esquerdo - Alunos Ativos */}
+        <button
+          type="button"
+          onClick={() => handleSelectFilter('all')}
+          className={`p-4 rounded-2xl text-left transition-all cursor-pointer ${
+            filterType === 'all'
+              ? 'bg-[#0E1E38] border-2 border-cyan-400 shadow-lg shadow-cyan-500/20 scale-[1.02]'
+              : 'bg-[#0C172B] border border-slate-800 hover:border-cyan-500/50 hover:bg-[#0E1A30]'
+          }`}
+        >
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Alunos Ativos</span>
+            <span className="font-bold text-slate-300">Alunos Ativos</span>
             <Users className="w-4 h-4 text-cyan-400" />
           </div>
-          <p className="text-2xl font-black text-white">{totalStudents}</p>
+          <p className="text-2xl font-black text-white mt-1">{totalStudents}</p>
           <span className="text-[10px] text-cyan-400 font-semibold">Inscritos no App</span>
-        </div>
+        </button>
 
-        <div className="p-4 rounded-2xl bg-[#0C172B] border border-slate-800 space-y-1">
+        {/* Quadro 2: Central Superior - Mensalidades em Dia */}
+        <button
+          type="button"
+          onClick={() => handleSelectFilter('paid')}
+          className={`p-4 rounded-2xl text-left transition-all cursor-pointer ${
+            filterType === 'paid'
+              ? 'bg-[#0A221C] border-2 border-emerald-400 shadow-lg shadow-emerald-500/20 scale-[1.02]'
+              : 'bg-[#0C172B] border border-slate-800 hover:border-emerald-500/50 hover:bg-[#0E1A30]'
+          }`}
+        >
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Mensalidades em Dia</span>
-            <DollarSign className="w-4 h-4 text-emerald-400" />
+            <span className="font-bold text-slate-300">Mensalidades em Dia</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           </div>
-          <p className="text-2xl font-black text-emerald-400">{paidStudents}</p>
+          <p className="text-2xl font-black text-emerald-400 mt-1">{paidStudents}</p>
           <span className="text-[10px] text-emerald-500 font-semibold">
             {totalStudents > 0 ? Math.round((paidStudents / totalStudents) * 100) : 0}% Adimplência
           </span>
-        </div>
+        </button>
 
-        <div className="p-4 rounded-2xl bg-[#0C172B] border border-slate-800 space-y-1">
+        {/* Quadro 3: Superior Direito - Focados */}
+        <button
+          type="button"
+          onClick={() => handleSelectFilter('focused')}
+          className={`p-4 rounded-2xl text-left transition-all cursor-pointer ${
+            filterType === 'focused'
+              ? 'bg-[#072422] border-2 border-emerald-400 shadow-lg shadow-emerald-500/20 scale-[1.02]'
+              : 'bg-[#0C172B] border border-slate-800 hover:border-emerald-500/50 hover:bg-[#0E1A30]'
+          }`}
+        >
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Em Inconstância</span>
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
+            <span className="font-bold text-slate-300">Focados</span>
+            <Flame className="w-4 h-4 text-emerald-400" />
           </div>
-          <p className="text-2xl font-black text-amber-400">{alertStudents}</p>
-          <span className="text-[10px] text-amber-500 font-semibold">Requerem Cobrança</span>
-        </div>
+          <p className="text-2xl font-black text-emerald-400 mt-1">{focusedStudents}</p>
+          <span className="text-[10px] text-emerald-400 font-semibold">Treinos OK / Frequência Alta</span>
+        </button>
 
-        <div className="p-4 rounded-2xl bg-[#0C172B] border border-slate-800 space-y-1">
+        {/* Quadro 4: Inferior Esquerdo - Canal Direto */}
+        <button
+          type="button"
+          onClick={() => handleSelectFilter('chat')}
+          className={`p-4 rounded-2xl text-left transition-all cursor-pointer ${
+            filterType === 'chat'
+              ? 'bg-[#0A1D36] border-2 border-blue-400 shadow-lg shadow-blue-500/20 scale-[1.02]'
+              : 'bg-[#0C172B] border border-slate-800 hover:border-blue-500/50 hover:bg-[#0E1A30]'
+          }`}
+        >
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Atendimento Rápido</span>
+            <span className="font-bold text-slate-300">Canal Direto</span>
             <MessageSquare className="w-4 h-4 text-blue-400" />
           </div>
-          <p className="text-2xl font-black text-blue-400">Canal Direto</p>
+          <p className="text-xl sm:text-2xl font-black text-blue-400 mt-1">Canal Direto</p>
           <span className="text-[10px] text-slate-400">WhatsApp & Chat</span>
-        </div>
+        </button>
+
+        {/* Quadro 5: Central Inferior - Pendentes */}
+        <button
+          type="button"
+          onClick={() => handleSelectFilter('pending_payment')}
+          className={`p-4 rounded-2xl text-left transition-all cursor-pointer ${
+            filterType === 'pending_payment'
+              ? 'bg-[#281119] border-2 border-rose-400 shadow-lg shadow-rose-500/20 scale-[1.02]'
+              : 'bg-[#0C172B] border border-slate-800 hover:border-rose-500/50 hover:bg-[#0E1A30]'
+          }`}
+        >
+          <div className="flex items-center justify-between text-slate-400 text-xs">
+            <span className="font-bold text-slate-300">Pendentes</span>
+            <DollarSign className="w-4 h-4 text-rose-400" />
+          </div>
+          <p className="text-2xl font-black text-rose-400 mt-1">{pendingStudents}</p>
+          <span className="text-[10px] text-rose-400 font-semibold">Mensalidades em Aberto</span>
+        </button>
+
+        {/* Quadro 6: Inferior Direito - Em Inconstância */}
+        <button
+          type="button"
+          onClick={() => handleSelectFilter('alert')}
+          className={`p-4 rounded-2xl text-left transition-all cursor-pointer ${
+            filterType === 'alert'
+              ? 'bg-[#251A0C] border-2 border-amber-400 shadow-lg shadow-amber-500/20 scale-[1.02]'
+              : 'bg-[#0C172B] border border-slate-800 hover:border-amber-500/50 hover:bg-[#0E1A30]'
+          }`}
+        >
+          <div className="flex items-center justify-between text-slate-400 text-xs">
+            <span className="font-bold text-slate-300">Em Inconstância</span>
+            <AlertTriangle className="w-4 h-4 text-amber-400" />
+          </div>
+          <p className="text-2xl font-black text-amber-400 mt-1">{alertStudents}</p>
+          <span className="text-[10px] text-amber-500 font-semibold">Requerem Cobrança</span>
+        </button>
       </div>
 
       {/* Main Content Split: Student List OR Selected Student Workspace */}
@@ -1278,53 +1366,90 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 />
               </div>
 
-              {/* Filter Tabs */}
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              {/* Filter Tabs - 6 Opções na mesma ordem que os quadros */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full scrollbar-none snap-x">
+                {/* 1. Alunos Ativos */}
                 <button
-                  onClick={() => setFilterType('all')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                  type="button"
+                  onClick={() => handleSelectFilter('all')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
                     filterType === 'all'
-                      ? 'bg-cyan-500 text-black shadow-md'
-                      : 'bg-slate-900 text-slate-400 hover:text-white'
+                      ? 'bg-cyan-500 text-black font-extrabold shadow-md'
+                      : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800'
                   }`}
                 >
-                  Todos ({totalStudents})
+                  <Users className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Alunos Ativos ({totalStudents})</span>
                 </button>
 
+                {/* 2. Canal Direto */}
                 <button
-                  onClick={() => setFilterType('alert')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    filterType === 'alert'
-                      ? 'bg-amber-500 text-black shadow-md'
-                      : 'bg-slate-900 text-amber-400 hover:text-white'
+                  type="button"
+                  onClick={() => handleSelectFilter('chat')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                    filterType === 'chat'
+                      ? 'bg-blue-500 text-white font-extrabold shadow-md'
+                      : 'bg-slate-900 text-blue-400 hover:text-white hover:bg-slate-800'
                   }`}
                 >
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  <span>Inconstantes ({alertStudents})</span>
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>Canal Direto</span>
                 </button>
 
+                {/* 3. Mensalidades em Dia */}
                 <button
-                  onClick={() => setFilterType('pending_payment')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  type="button"
+                  onClick={() => handleSelectFilter('paid')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                    filterType === 'paid'
+                      ? 'bg-emerald-500 text-black font-extrabold shadow-md'
+                      : 'bg-slate-900 text-emerald-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Mensalidades em Dia ({paidStudents})</span>
+                </button>
+
+                {/* 4. Pendentes */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectFilter('pending_payment')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
                     filterType === 'pending_payment'
-                      ? 'bg-rose-500 text-white shadow-md'
-                      : 'bg-slate-900 text-rose-400 hover:text-white'
+                      ? 'bg-rose-500 text-white font-extrabold shadow-md'
+                      : 'bg-slate-900 text-rose-400 hover:text-white hover:bg-slate-800'
                   }`}
                 >
                   <DollarSign className="w-3.5 h-3.5" />
-                  <span>Pendentes</span>
+                  <span>Pendentes ({pendingStudents})</span>
                 </button>
 
+                {/* 5. Focados */}
                 <button
-                  onClick={() => setFilterType('focused')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  type="button"
+                  onClick={() => handleSelectFilter('focused')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
                     filterType === 'focused'
-                      ? 'bg-emerald-500 text-black shadow-md'
-                      : 'bg-slate-900 text-emerald-400 hover:text-white'
+                      ? 'bg-emerald-400 text-black font-extrabold shadow-md'
+                      : 'bg-slate-900 text-emerald-300 hover:text-white hover:bg-slate-800'
                   }`}
                 >
                   <Flame className="w-3.5 h-3.5" />
-                  <span>Focados</span>
+                  <span>Focados ({focusedStudents})</span>
+                </button>
+
+                {/* 6. Em Inconstância */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectFilter('alert')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                    filterType === 'alert'
+                      ? 'bg-amber-500 text-black font-extrabold shadow-md'
+                      : 'bg-slate-900 text-amber-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <span>Em Inconstância ({alertStudents})</span>
                 </button>
               </div>
             </div>
