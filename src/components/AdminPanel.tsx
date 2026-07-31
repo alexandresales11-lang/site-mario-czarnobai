@@ -86,7 +86,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [activeTab, setActiveTab] = useState<'treinos' | 'dieta' | 'financeiro' | 'chat'>('treinos');
 
   // Workout Editing State
-  const [editingWorkoutKey, setEditingWorkoutKey] = useState<'A' | 'B' | 'C' | 'D'>('A');
+  const [editingWorkoutKey, setEditingWorkoutKey] = useState<string>('A');
   const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
   const [newExName, setNewExName] = useState('');
   const [newExMuscle, setNewExMuscle] = useState('');
@@ -109,17 +109,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
 
   // Get list of non-admin student accounts
-  const studentList = Object.values(accountsDb).filter((acc) => !acc.isAdmin);
+  const studentList: UserAccount[] = (Object.values(accountsDb) as UserAccount[]).filter((acc) => !acc.isAdmin);
 
   // Stats Counters
   const totalStudents = studentList.length;
-  const paidStudents = studentList.filter((s) => s.paymentStatus !== 'pendente').length;
+  const paidStudents = studentList.filter((s: UserAccount) => s.paymentStatus !== 'pendente').length;
   const alertStudents = studentList.filter(
-    (s) => s.statusBadge === 'inconstante' || s.statusBadge === 'atencao' || s.streak === 0
+    (s: UserAccount) => s.statusBadge === 'inconstante' || s.statusBadge === 'atencao' || s.streak === 0
   ).length;
 
   // Filtered Student List
-  const filteredStudents = studentList.filter((student) => {
+  const filteredStudents = studentList.filter((student: UserAccount) => {
     const matchesSearch =
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -153,6 +153,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const key = updatedAccount.email.toLowerCase();
     const newDb = { ...accountsDb, [key]: updatedAccount };
     onUpdateAccounts(newDb);
+  };
+
+  // Handler: Add New Workout Sheet (e.g., Treino E, F...)
+  const handleAddWorkoutKey = () => {
+    if (!selectedStudent) return;
+    const currentExercises = selectedStudent.exercises || {};
+    const existingKeys = Object.keys(currentExercises);
+    const standardKeys = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const nextKey = standardKeys.find((k) => !existingKeys.includes(k)) || `T${existingKeys.length + 1}`;
+
+    const updatedAcc: UserAccount = {
+      ...selectedStudent,
+      exercises: {
+        ...currentExercises,
+        [nextKey]: []
+      }
+    };
+
+    saveStudentChanges(updatedAcc);
+    setEditingWorkoutKey(nextKey);
+    notifySaved(`Nova ficha "Treino ${nextKey}" criada com sucesso! Adicione exercícios abaixo.`);
   };
 
   // Handler: Add New Exercise to Selected Student
@@ -493,12 +514,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       )}
 
       {/* Top Professional Header Bar */}
-      <div className="bg-gradient-to-r from-[#0C172B] via-[#091122] to-[#0C172B] border-b border-cyan-500/30 p-4 sm:p-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
+      <div className="bg-gradient-to-r from-[#0C172B] via-[#091122] to-[#0C172B] border-b border-cyan-500/30 p-3.5 sm:p-6 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+        <div className="flex flex-wrap items-center gap-3 min-w-0 flex-1">
           {onCloseApp && (
             <button
               onClick={onCloseApp}
-              className="p-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors border border-slate-800"
+              className="p-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors border border-slate-800 shrink-0"
               title="Voltar ao Site"
             >
               <ArrowLeft className="w-5 h-5 text-cyan-400" />
@@ -506,8 +527,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           )}
 
           {/* Coach Avatar */}
-          <div className="relative">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-cyan-300 p-0.5 shadow-xl shadow-cyan-500/30 overflow-hidden">
+          <div className="relative shrink-0">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-cyan-300 p-0.5 shadow-xl shadow-cyan-500/30 overflow-hidden">
               <img
                 src="https://i.imgur.com/FVHkZ7T.png"
                 alt="Personal Mário Czarnobai"
@@ -515,20 +536,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               />
             </div>
             <div className="absolute -bottom-1 -right-1 bg-cyan-400 text-black p-1 rounded-full shadow-md">
-              <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
+              <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
             </div>
           </div>
 
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-extrabold text-white text-lg tracking-wide uppercase font-display">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="font-extrabold text-white text-base sm:text-lg tracking-wide uppercase font-display">
                 Mário Czarnobai
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gradient-to-r from-cyan-500 to-blue-600 text-black uppercase tracking-wider shadow-sm">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gradient-to-r from-cyan-500 to-blue-600 text-black uppercase tracking-wider shadow-sm whitespace-nowrap shrink-0">
                 PAINEL DO PERSONAL
               </span>
             </div>
-            <p className="text-xs text-cyan-400 font-medium mt-0.5 flex items-center gap-2">
+            <p className="text-xs text-cyan-400 font-medium mt-0.5 flex flex-wrap items-center gap-2">
               <span>CREF 049281-G/PR</span>
               <span className="text-slate-600">•</span>
               <span className="text-slate-300">Gestão Exclusiva de Alunos</span>
@@ -537,10 +558,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
 
         {/* Action Header Buttons */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
             onClick={() => setShowAddStudentModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all"
+            className="flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>Novo Aluno</span>
@@ -548,7 +569,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
           <button
             onClick={onLogoutAdmin}
-            className="p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition-colors flex items-center gap-1.5 text-xs font-bold"
+            className="p-2 sm:p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition-colors flex items-center gap-1.5 text-xs font-bold"
             title="Sair da Conta Admin"
           >
             <LogOut className="w-4 h-4 text-rose-400" />
@@ -726,38 +747,54 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </button>
             </div>
 
-            {/* TAB 1: EDIT WORKOUT SHEETS (A, B, C, D) */}
+            {/* TAB 1: EDIT WORKOUT SHEETS (A, B, C, D...) */}
             {activeTab === 'treinos' && (
               <div className="space-y-6">
                 {/* Select Workout Sheet Key */}
-                <div className="flex items-center justify-between bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
-                  <div className="flex gap-2">
-                    {(['A', 'B', 'C', 'D'] as const).map((key) => {
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800 gap-3">
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1.5 max-w-full scrollbar-none snap-x">
+                    {(
+                      Object.keys(selectedStudent.exercises || {}).length > 0
+                        ? Object.keys(selectedStudent.exercises)
+                        : ['A', 'B', 'C', 'D']
+                    ).map((key) => {
                       const list = selectedStudent.exercises?.[key] || [];
                       return (
                         <button
                           key={key}
                           onClick={() => setEditingWorkoutKey(key)}
-                          className={`px-4 py-2 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 ${
+                          className={`px-3.5 py-2 rounded-xl font-extrabold text-xs transition-all flex items-center gap-1.5 shrink-0 snap-start cursor-pointer ${
                             editingWorkoutKey === key
                               ? 'bg-cyan-500 text-black font-extrabold shadow-md'
                               : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                           }`}
                         >
                           <span>Treino {key}</span>
-                          <span className="px-1.5 py-0.2 text-[10px] rounded bg-black/20 text-current">
+                          <span className="px-1.5 py-0.2 text-[10px] rounded bg-black/20 text-current font-bold">
                             {list.length} ex
                           </span>
                         </button>
                       );
                     })}
+
+                    {/* Subtle button to add a new workout sheet (Treino E, F...) */}
+                    <button
+                      type="button"
+                      onClick={handleAddWorkoutKey}
+                      className="px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-cyan-400 font-bold text-xs border border-dashed border-cyan-500/40 flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer"
+                      title="Adicionar nova ficha de treino (Treino E, F...)"
+                    >
+                      <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>+ Novo Treino</span>
+                    </button>
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => setShowAddExerciseModal(true)}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-bold text-xs border border-cyan-500/40 transition-colors"
+                    className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-bold text-xs border border-cyan-500/40 transition-colors shrink-0 cursor-pointer"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-4 h-4 stroke-[2.5]" />
                     <span>Adicionar Exercício ao Treino {editingWorkoutKey}</span>
                   </button>
                 </div>
@@ -771,9 +808,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <p className="text-xs text-slate-500 mb-4">Monte a sequência de exercícios personalizada para o aluno.</p>
                     <button
                       onClick={() => setShowAddExerciseModal(true)}
-                      className="px-4 py-2 rounded-xl bg-cyan-500 text-black font-bold text-xs inline-flex items-center gap-1.5"
+                      className="px-4 py-2 rounded-xl bg-cyan-500 text-black font-bold text-xs inline-flex items-center gap-1.5 shadow-lg shadow-cyan-500/20 cursor-pointer"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-4 h-4 stroke-[2.5]" />
                       <span>Montar Treino {editingWorkoutKey} Agora</span>
                     </button>
                   </div>
@@ -832,7 +869,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                           <button
                             onClick={() => handleDeleteExercise(editingWorkoutKey, ex.id)}
-                            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors mt-3"
+                            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors mt-3 cursor-pointer"
                             title="Remover exercício"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -854,6 +891,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         </div>
                       </div>
                     ))}
+
+                    {/* Subtle bottom button to add another exercise */}
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddExerciseModal(true)}
+                        className="w-full py-3 px-4 rounded-2xl bg-[#091222] hover:bg-cyan-950/40 border border-dashed border-cyan-500/30 hover:border-cyan-400/60 text-cyan-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm group"
+                      >
+                        <Plus className="w-4 h-4 text-cyan-400 stroke-[2.5] group-hover:scale-110 transition-transform" />
+                        <span>Adicionar Novo Exercício ao Treino {editingWorkoutKey}</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

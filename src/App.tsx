@@ -57,15 +57,12 @@ export default function App() {
 
       {/* VIEW MODE: STUDENT APP PORTAL */}
       {viewMode === 'app' ? (
-        <div className="min-h-screen py-4 sm:py-6 px-3 sm:px-4 bg-[#050A12] animate-fadeIn">
-          {/* Clean App Header Bar - External link to site */}
-          <div className="max-w-4xl mx-auto mb-3 sm:mb-4 flex items-center justify-between">
+        <div className="min-h-screen py-2 sm:py-6 px-3 sm:px-4 bg-[#050A12] flex flex-col justify-center animate-fadeIn">
+          {/* Clean App Header Bar - Switch to site view */}
+          <div className="max-w-4xl w-full mx-auto mb-2 sm:mb-4 flex items-center justify-between">
             <button
               type="button"
-              onClick={() => {
-                const siteUrl = `${window.location.origin}?mode=site`;
-                window.open(siteUrl, '_blank', 'noopener,noreferrer');
-              }}
+              onClick={() => setViewMode('landing')}
               className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition-colors shadow-md hover:bg-slate-800"
             >
               <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />

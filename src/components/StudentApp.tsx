@@ -667,7 +667,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
   };
 
   const [activeTab, setActiveTab] = useState<'treinos' | 'evolucao' | 'dieta' | 'chat'>('treinos');
-  const [selectedWorkout, setSelectedWorkout] = useState<'A' | 'B' | 'C' | 'D'>('A');
+  const [selectedWorkout, setSelectedWorkout] = useState<string>('A');
 
   // Timer state
   const [activeTimer, setActiveTimer] = useState<{ exerciseId: string; seconds: number; total: number } | null>(null);
@@ -779,7 +779,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
   // Render Login / Signup screen if not logged in
   if (!isLoggedIn) {
     return (
-      <div className="w-full max-w-md mx-auto bg-[#070C16] border border-cyan-900/50 rounded-3xl shadow-2xl overflow-hidden font-sans text-slate-100 p-6 sm:p-8 my-4 animate-fadeIn">
+      <div className="w-full max-w-md mx-auto bg-[#070C16] border border-cyan-900/50 rounded-3xl shadow-2xl overflow-hidden font-sans text-slate-100 p-6 sm:p-8 flex flex-col justify-between min-h-[calc(100vh-4rem)] sm:min-h-[640px] my-auto animate-fadeIn">
         {/* Top Header */}
         <div className="text-center mb-6">
           <div className="relative inline-block mb-3">
@@ -1336,30 +1336,35 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
         {activeTab === 'treinos' && (
           <div className="space-y-6">
             {/* Workout selector */}
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex gap-2">
-                {(['A', 'B', 'C', 'D'] as const).map((letter) => (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0B1324] p-3.5 rounded-2xl border border-slate-800">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 max-w-full scrollbar-none snap-x">
+                {(
+                  userProfile.exercises && Object.keys(userProfile.exercises).length > 0
+                    ? Object.keys(userProfile.exercises)
+                    : ['A', 'B', 'C', 'D']
+                ).map((letter) => (
                   <button
                     key={letter}
                     onClick={() => setSelectedWorkout(letter)}
-                    className={`w-11 h-11 rounded-2xl font-bold text-sm flex items-center justify-center transition-all ${
+                    className={`px-3.5 py-2.5 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shrink-0 snap-start cursor-pointer ${
                       selectedWorkout === letter
-                        ? 'bg-gradient-to-tr from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30 scale-105'
-                        : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold shadow-lg shadow-cyan-500/30'
+                        : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
                     }`}
                   >
-                    Treino {letter}
+                    <span>Treino {letter}</span>
                   </button>
                 ))}
               </div>
 
-              <div className="text-right">
-                <span className="text-xs text-slate-400">Divisão Atual:</span>
-                <p className="text-sm font-bold text-cyan-400">
+              <div className="text-left sm:text-right shrink-0">
+                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Divisão Atual:</span>
+                <p className="text-xs font-bold text-cyan-400">
                   {selectedWorkout === 'A' && 'Peitoral, Ombros e Tríceps'}
                   {selectedWorkout === 'B' && 'Costas, Deltoide Post. e Bíceps'}
                   {selectedWorkout === 'C' && 'Membros Inferiores Completo'}
                   {selectedWorkout === 'D' && 'Core & Fortalecimento de Abdômen'}
+                  {!['A', 'B', 'C', 'D'].includes(selectedWorkout) && `Ficha Personalizada (${selectedWorkout})`}
                 </p>
               </div>
             </div>
