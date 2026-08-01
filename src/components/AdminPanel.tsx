@@ -106,9 +106,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [newStudentGoal, setNewStudentGoal] = useState('Hipertrofia & Definição');
   const [newStudentPlan, setNewStudentPlan] = useState('Consultoria V.I.P. Trimestral');
 
-  // Message input state inside admin chat
+  // Message input state & Canal Direto Chat states
   const [adminChatMsg, setAdminChatMsg] = useState('');
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
+  const [chatActiveEmail, setChatActiveEmail] = useState<string | null>(null);
+  const [chatMobileView, setChatMobileView] = useState<'list' | 'chat'>('list');
+  const [chatSearchTerm, setChatSearchTerm] = useState('');
 
   // Get list of non-admin student accounts
   const studentList: UserAccount[] = (Object.values(accountsDb) as UserAccount[]).filter((acc) => !acc.isAdmin);
@@ -358,10 +361,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     notifySaved(`Plano Alimentar e Macronutrientes salvos para ${selectedStudent.name}!`);
   };
 
-  // Handler: Send Message from Mário to Student
-  const handleSendAdminMessage = (textToSend?: string) => {
+  // Handler: Send Message from Mário to Student (via selected student workspace or Canal Direto chat)
+  const handleSendAdminMessage = (textToSend?: string, overrideTargetEmail?: string) => {
     const text = textToSend || adminChatMsg;
-    if (!selectedStudent || !text.trim()) return;
+    const recipientEmail = overrideTargetEmail || selectedStudentEmail || chatActiveEmail || (studentList[0] ? studentList[0].email : null);
+    if (!recipientEmail || !text.trim()) return;
+
+    const studentToUpdate = accountsDb[recipientEmail.toLowerCase()];
+    if (!studentToUpdate) return;
 
     const newMsg: ChatMessage = {
       id: 'm_' + Date.now(),
@@ -370,16 +377,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    const currentMsgs = selectedStudent.messages || [];
+    const currentMsgs = studentToUpdate.messages || [];
     const updatedMsgs = [...currentMsgs, newMsg];
 
     saveStudentChanges({
-      ...selectedStudent,
+      ...studentToUpdate,
       messages: updatedMsgs
     });
 
     if (!textToSend) setAdminChatMsg('');
-    notifySaved(`Mensagem enviada para o app de ${selectedStudent.name}!`);
+    notifySaved(`Mensagem enviada para ${studentToUpdate.name}!`);
   };
 
   // Handler: Quick Create New Student Account by Mário
@@ -539,21 +546,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       )}
 
       {/* Top Professional Header Bar */}
-      <div className="bg-gradient-to-r from-[#0C172B] via-[#091122] to-[#0C172B] border-b border-cyan-500/30 p-3.5 sm:p-6 relative flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0 pr-28 sm:pr-0 flex-1">
+      <div className="bg-gradient-to-r from-[#0C172B] via-[#091122] to-[#0C172B] border-b border-cyan-500/30 p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
           {onCloseApp && (
             <button
               onClick={onCloseApp}
-              className="p-2 sm:p-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors border border-slate-800 shrink-0"
+              className="p-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors border border-slate-800 shrink-0 cursor-pointer"
               title="Voltar ao Site"
             >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
+              <ArrowLeft className="w-5 h-5 text-cyan-400" />
             </button>
           )}
 
           {/* Coach Avatar */}
           <div className="relative shrink-0">
-            <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-cyan-300 p-0.5 shadow-xl shadow-cyan-500/30 overflow-hidden">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-cyan-300 p-0.5 shadow-xl shadow-cyan-500/30 overflow-hidden">
               <img
                 src="https://i.imgur.com/FVHkZ7T.png"
                 alt="Personal Mário Czarnobai"
@@ -566,37 +573,37 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
 
           <div className="min-w-0 flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-              <h2 className="font-extrabold text-white text-sm sm:text-lg tracking-wide uppercase font-display leading-tight truncate">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <h2 className="font-extrabold text-white text-base sm:text-lg tracking-wide uppercase font-display leading-tight">
                 Mário Czarnobai
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black bg-gradient-to-r from-cyan-500 to-blue-600 text-black uppercase tracking-wider shadow-sm whitespace-nowrap shrink-0 self-start sm:self-auto">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-cyan-500 to-blue-600 text-black uppercase tracking-wider shadow-sm whitespace-nowrap shrink-0">
                 PAINEL DO PERSONAL
               </span>
             </div>
-            <p className="text-[11px] sm:text-xs text-cyan-400 font-medium mt-0.5">
+            <p className="text-xs text-cyan-400 font-medium mt-0.5">
               <span>CREF 049281-G/PR</span>
             </p>
           </div>
         </div>
 
-        {/* Action Header Buttons - Positioned cleanly in top right corner on mobile */}
-        <div className="absolute top-3.5 right-3.5 sm:relative sm:top-auto sm:right-auto flex items-center gap-1.5 sm:gap-3 shrink-0">
+        {/* Action Header Buttons */}
+        <div className="flex items-center justify-end gap-2 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-800/60">
           <button
             onClick={() => setShowAddStudentModal(true)}
-            className="flex items-center gap-1 sm:gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md shadow-cyan-500/20 hover:opacity-95 transition-all cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-xs uppercase tracking-wider shadow-md shadow-cyan-500/20 hover:opacity-95 transition-all cursor-pointer whitespace-nowrap"
           >
-            <Plus className="w-3.5 h-3.5 stroke-[3]" />
+            <Plus className="w-4 h-4 stroke-[3]" />
             <span>Novo Aluno</span>
           </button>
 
           <button
             onClick={onLogoutAdmin}
-            className="p-1.5 sm:p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition-colors flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-bold cursor-pointer"
+            className="px-3 py-2 sm:py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition-colors flex items-center gap-1.5 text-xs font-bold cursor-pointer whitespace-nowrap"
             title="Sair da Conta Admin"
           >
-            <LogOut className="w-3.5 h-3.5 text-rose-400" />
-            <span className="hidden sm:inline">Sair</span>
+            <LogOut className="w-4 h-4 text-rose-400" />
+            <span>Sair</span>
           </button>
         </div>
       </div>
@@ -717,7 +724,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       {/* Main Content Split: Student List OR Selected Student Workspace */}
       <div className="p-4 sm:p-6 flex-1 flex flex-col gap-6">
         {selectedStudent ? (
-          /* ================= WORKSPACE DO ALUNO SELECIONADO ================= */
           <div className="space-y-6 animate-fadeIn">
             {/* Top Student Header Card */}
             <div className="p-5 rounded-2xl bg-gradient-to-r from-[#0C172B] via-[#091224] to-[#0C172B] border border-cyan-500/40 flex flex-wrap items-center justify-between gap-4 shadow-xl">
@@ -779,7 +785,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                 {selectedStudent.phone && (
                   <a
-                    href={`https://wa.me/55${selectedStudent.phone.replace(/\D/g, '')}`}
+                    href={'https://wa.me/55' + selectedStudent.phone.replace(/[^0-9]/g, '')}
                     target="_blank"
                     rel="noreferrer"
                     className="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs flex items-center gap-1.5 transition-colors"
@@ -1420,7 +1426,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             )}
           </div>
         ) : (
-          /* ================= LISTA E DIRETÓRIO DE ALUNOS ================= */
           <div className="space-y-6">
             {/* Search & Filter Controls */}
             <div className="flex flex-wrap items-center justify-between gap-4 bg-[#0B1324] p-4 rounded-2xl border border-slate-800">
@@ -1524,152 +1529,601 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
             </div>
 
-            {/* Special Banner when Canal Direto filter is active */}
-            {filterType === 'chat' && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-950/80 via-[#0A1D36] to-blue-950/80 border border-blue-500/40 flex items-center justify-between gap-3 text-xs text-blue-200 shadow-xl">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 shrink-0">
-                    <MessageSquare className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="font-extrabold text-white text-sm">Central do Canal Direto (WhatsApp & Chat)</p>
-                    <p className="text-[11px] text-slate-300 mt-0.5">Clique em "💬 Abrir Chat com Aluno" em qualquer aluno abaixo para abrir a conversa direta, enviar avisos, cobranças ou mensagens personalizadas.</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Students Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredStudents.length > 0 ? (
-                filteredStudents.map((student) => {
-                  const isAlert = student.statusBadge === 'inconstante' || student.streak === 0;
-                  const lastMessage = student.messages && student.messages.length > 0
-                    ? student.messages[student.messages.length - 1]
-                    : null;
-
-                  return (
-                    <div
-                      key={student.email}
-                      className={`p-4 sm:p-5 rounded-2xl bg-[#0B1324] border transition-all hover:scale-[1.01] flex flex-col justify-between gap-3.5 ${
-                        isAlert
-                          ? 'border-amber-500/40 shadow-lg shadow-amber-500/5'
-                          : 'border-slate-800 hover:border-cyan-500/40'
-                      }`}
+            {/* Conditional Rendering: WhatsApp/Telegram Canal Direto Page OR Standard Student Grid */}
+            {filterType === 'chat' ? (
+              <div className="space-y-4 animate-fadeIn">
+                {/* Canal Direto Top Bar */}
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-[#0C1A30] via-[#091326] to-[#0C1A30] border border-blue-500/40 flex flex-wrap items-center justify-between gap-3 shadow-xl">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setFilterType('all')}
+                      className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 transition-colors cursor-pointer"
+                      title="Voltar à Lista Geral de Alunos"
                     >
-                      {/* Top Header Row of Student Card */}
-                      <div className="flex items-start justify-between gap-2.5">
-                        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-                          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
-                            {student.photo ? (
-                              <img src={student.photo} alt={student.name} className="w-full h-full object-cover" />
+                      <ArrowLeft className="w-5 h-5 text-cyan-400" />
+                    </button>
+                    <div className="p-2.5 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 shrink-0">
+                      <MessageSquare className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-extrabold text-white text-base sm:text-lg flex items-center gap-2">
+                        Central Canal Direto
+                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/40">
+                          WhatsApp & Chat
+                        </span>
+                      </h3>
+                      <p className="text-xs text-slate-300">Mensagens em tempo real, avisos, cobranças e anotações do aluno</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setFilterType('all')}
+                    className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <Users className="w-4 h-4 text-cyan-400" />
+                    <span>Voltar aos Alunos</span>
+                  </button>
+                </div>
+
+                {/* WhatsApp / Telegram Main Chat Canvas */}
+                <div className="bg-[#070D1A] border border-cyan-500/30 rounded-2xl overflow-hidden min-h-[620px] flex flex-col md:flex-row shadow-2xl">
+                  {/* LEFT SIDEBAR: Conversations List */}
+                  <div
+                    className={`w-full md:w-80 lg:w-96 border-r border-slate-800 bg-[#060B18] flex flex-col shrink-0 ${
+                      chatMobileView === 'chat' ? 'hidden md:flex' : 'flex'
+                    }`}
+                  >
+                    {/* Search Bar in Left Sidebar */}
+                    <div className="p-3.5 border-b border-slate-800/80 bg-[#071122]">
+                      <div className="relative">
+                        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={chatSearchTerm}
+                          onChange={(e) => setChatSearchTerm(e.target.value)}
+                          placeholder="Buscar aluno na conversa..."
+                          className="w-full pl-9 pr-3 py-2 bg-slate-900/90 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Conversations List Items */}
+                    <div className="flex-1 overflow-y-auto divide-y divide-slate-800/60 max-h-[580px]">
+                      {studentList
+                        .filter(
+                          (s) =>
+                            s.name.toLowerCase().includes(chatSearchTerm.toLowerCase()) ||
+                            s.email.toLowerCase().includes(chatSearchTerm.toLowerCase())
+                        )
+                        .map((student) => {
+                          const activeEmail = chatActiveEmail || (studentList[0] ? studentList[0].email : '');
+                          const isSelected = activeEmail.toLowerCase() === student.email.toLowerCase();
+                          const lastMsg =
+                            student.messages && student.messages.length > 0
+                              ? student.messages[student.messages.length - 1]
+                              : null;
+
+                          return (
+                            <div
+                              key={student.email}
+                              onClick={() => {
+                                setChatActiveEmail(student.email);
+                                setChatMobileView('chat');
+                              }}
+                              className={`p-3.5 transition-all cursor-pointer flex items-center gap-3 ${
+                                isSelected
+                                  ? 'bg-gradient-to-r from-blue-900/40 via-blue-950/30 to-transparent border-l-4 border-blue-400 text-white'
+                                  : 'hover:bg-slate-900/60 text-slate-300'
+                              }`}
+                            >
+                              {/* Student Avatar */}
+                              <div className="relative shrink-0">
+                                <div className="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center">
+                                  {student.photo ? (
+                                    <img src={student.photo} alt={student.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <User className="w-6 h-6 text-cyan-400" />
+                                  )}
+                                </div>
+                                <span className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#060B18] absolute -bottom-0.5 -right-0.5" />
+                              </div>
+
+                              {/* Student Name & Preview */}
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-1">
+                                  <h4 className={`font-bold text-xs truncate ${isSelected ? 'text-white' : 'text-slate-200'}`}>
+                                    {student.name}
+                                  </h4>
+                                  <span className="text-[9px] text-slate-500 shrink-0 font-semibold">
+                                    {lastMsg ? lastMsg.time : 'Novo'}
+                                  </span>
+                                </div>
+
+                                <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                                  {lastMsg ? (
+                                    <span>
+                                      <strong className="text-blue-400 font-semibold">
+                                        {lastMsg.sender === 'mario' ? 'Você: ' : ''}
+                                      </strong>
+                                      {lastMsg.text}
+                                    </span>
+                                  ) : (
+                                    <span className="italic text-slate-500">Inicie uma conversa...</span>
+                                  )}
+                                </p>
+
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${
+                                      student.paymentStatus === 'pendente'
+                                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                    }`}
+                                  >
+                                    {student.paymentStatus === 'pendente' ? '🔴 Pendente' : '🟢 Em Dia'}
+                                  </span>
+                                  <span className="text-[9px] text-amber-400 font-extrabold flex items-center gap-0.5">
+                                    <Flame className="w-2.5 h-2.5 fill-amber-400" />
+                                    {student.streak}d
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+
+                  {/* RIGHT MAIN PANEL: Active Chat & Student Workspace */}
+                  {(() => {
+                    const activeEmail = chatActiveEmail || (studentList[0] ? studentList[0].email : '');
+                    const activeStudent = activeEmail ? accountsDb[activeEmail.toLowerCase()] : null;
+
+                    if (!activeStudent) {
+                      return (
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-slate-500">
+                          <MessageSquare className="w-12 h-12 text-slate-600 mb-3" />
+                          <p className="text-sm font-bold text-slate-400">Nenhum aluno selecionado</p>
+                          <p className="text-xs text-slate-500 mt-1">Selecione uma conversa na lista ao lado.</p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        className={`flex-1 flex flex-col lg:flex-row bg-[#081122] ${
+                          chatMobileView === 'list' ? 'hidden md:flex' : 'flex'
+                        }`}
+                      >
+                        {/* Main Conversation Stream */}
+                        <div className="flex-1 flex flex-col h-full min-w-0">
+                          {/* Active Chat Top Header Bar */}
+                          <div className="p-3.5 sm:p-4 bg-[#091428] border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <button
+                                onClick={() => setChatMobileView('list')}
+                                className="md:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300"
+                                title="Voltar às conversas"
+                              >
+                                <ArrowLeft className="w-4 h-4 text-cyan-400" />
+                              </button>
+
+                              <div className="w-10 h-10 rounded-xl bg-slate-800 border border-cyan-500/40 overflow-hidden flex items-center justify-center shrink-0">
+                                {activeStudent.photo ? (
+                                  <img src={activeStudent.photo} alt={activeStudent.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <User className="w-5 h-5 text-cyan-400" />
+                                )}
+                              </div>
+
+                              <div className="min-w-0">
+                                <h3 className="font-extrabold text-white text-sm truncate">{activeStudent.name}</h3>
+                                <div className="flex items-center gap-2 text-[11px] text-slate-400 truncate">
+                                  <span className="text-cyan-400 font-semibold">{activeStudent.goal}</span>
+                                  <span>•</span>
+                                  <span className="text-amber-400 font-bold flex items-center gap-1">
+                                    <Flame className="w-3 h-3 fill-amber-400" />
+                                    {activeStudent.streak} dias
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Quick Actions in Header */}
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                onClick={() => {
+                                  setSelectedStudentEmail(activeStudent.email);
+                                  setActiveTab('treinos');
+                                }}
+                                className="px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-[11px] uppercase tracking-wider hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-cyan-500/20"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Ver Treino & Dieta</span>
+                                <span className="sm:hidden">Ficha</span>
+                              </button>
+
+                              {activeStudent.phone && (
+                                <a
+                                  href={'https://wa.me/55' + activeStudent.phone.replace(/[^0-9]/g, '')}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 transition-colors"
+                                  title="Abrir no WhatsApp Web"
+                                >
+                                  <Phone className="w-4 h-4 text-emerald-400" />
+                                </a>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Chat Messages Timeline Stream */}
+                          <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gradient-to-b from-[#081122] via-[#070E1C] to-[#081122] min-h-[360px] max-h-[420px]">
+                            <div className="text-center my-2">
+                              <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-slate-900/80 text-slate-400 border border-slate-800">
+                                🔒 Canal Seguro de Mensagens Diretas com {activeStudent.name}
+                              </span>
+                            </div>
+
+                            {activeStudent.messages && activeStudent.messages.length > 0 ? (
+                              activeStudent.messages.map((m) => (
+                                <div
+                                  key={m.id}
+                                  className={`flex flex-col ${m.sender === 'mario' ? 'items-end' : 'items-start'}`}
+                                >
+                                  <div
+                                    className={`max-w-[85%] sm:max-w-[75%] p-3.5 rounded-2xl text-xs leading-relaxed ${
+                                      m.sender === 'mario'
+                                        ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-medium rounded-tr-none shadow-lg shadow-blue-500/10'
+                                        : 'bg-slate-800/90 text-slate-100 rounded-tl-none border border-slate-700/80 shadow-md'
+                                    }`}
+                                  >
+                                    <span className="block text-[10px] opacity-80 mb-1 font-bold tracking-wider uppercase">
+                                      {m.sender === 'mario' ? 'Você (Personal Mário)' : activeStudent.name}
+                                    </span>
+                                    <p className="whitespace-pre-wrap">{m.text}</p>
+                                    <div className="flex items-center justify-end gap-1 mt-1 text-[9px] opacity-70">
+                                      <span>{m.time}</span>
+                                      {m.sender === 'mario' && <Check className="w-3 h-3 text-cyan-200 stroke-[3]" />}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
                             ) : (
-                              <User className="w-6 h-6 text-cyan-400" />
+                              <div className="text-center py-12 space-y-3">
+                                <MessageSquare className="w-10 h-10 text-slate-600 mx-auto" />
+                                <p className="text-xs text-slate-400 font-medium">
+                                  Nenhuma mensagem enviada ainda para {activeStudent.name}.
+                                </p>
+                                <p className="text-[11px] text-slate-500">
+                                  Escolha um atalho abaixo ou digite um aviso personalizado.
+                                </p>
+                              </div>
                             )}
                           </div>
 
-                          <div className="min-w-0 flex-1">
-                            <h4 className="font-extrabold text-white text-sm sm:text-base truncate">{student.name}</h4>
-                            <p className="text-[11px] sm:text-xs text-slate-400 truncate">{student.email}</p>
-                            <span className="inline-block mt-0.5 text-[11px] font-bold text-cyan-400 truncate max-w-full">
-                              Goal: {student.goal}
+                          {/* Quick Preset Message Chips Bar */}
+                          <div className="p-2.5 bg-[#070D1A] border-t border-slate-800/80 flex items-center gap-2 overflow-x-auto no-scrollbar">
+                            <span className="text-[10px] font-bold text-slate-400 shrink-0 uppercase tracking-wider pl-1">
+                              Atalhos:
                             </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleSendAdminMessage(
+                                  '🔥 Fala! Passei pra saber se já fez o treino de hoje. Não deixa pra depois, bora pra cima!',
+                                  activeStudent.email
+                                )
+                              }
+                              className="px-2.5 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[11px] font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer"
+                            >
+                              🔥 Cobrar Treino
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleSendAdminMessage(
+                                  '💰 Olá! Passando para lembrar sobre a renovação da sua mensalidade da consultoria. Qualquer dúvida me chama!',
+                                  activeStudent.email
+                                )
+                              }
+                              className="px-2.5 py-1 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[11px] font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer"
+                            >
+                              💰 Lembrar Mensalidade
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleSendAdminMessage(
+                                  '💪 Atualizei suas cargas e observações de execução na sua ficha de treino no aplicativo!',
+                                  activeStudent.email
+                                )
+                              }
+                              className="px-2.5 py-1 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-[11px] font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer"
+                            >
+                              💪 Treino Atualizado
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleSendAdminMessage(
+                                  '👏 Parabéns pela constância incrível essa semana! Continue mantendo o foco total!',
+                                  activeStudent.email
+                                )
+                              }
+                              className="px-2.5 py-1 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer"
+                            >
+                              👏 Elogio & Foco
+                            </button>
+                          </div>
+
+                          {/* Input Message Controls Bar */}
+                          <div className="p-3 bg-[#091428] border-t border-slate-800 flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={adminChatMsg}
+                              onChange={(e) => setAdminChatMsg(e.target.value)}
+                              placeholder={`Escreva uma mensagem para ${activeStudent.name}...`}
+                              onKeyDown={(e) =>
+                                e.key === 'Enter' && handleSendAdminMessage(undefined, activeStudent.email)
+                              }
+                              className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleSendAdminMessage(undefined, activeStudent.email)}
+                              className="px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-black text-xs uppercase tracking-wider rounded-xl hover:opacity-95 transition-all flex items-center gap-1.5 shadow-md cursor-pointer shrink-0"
+                            >
+                              <Send className="w-4 h-4" />
+                              <span className="hidden sm:inline">Enviar</span>
+                            </button>
                           </div>
                         </div>
 
-                        {/* Standardized Status Badges Column - Fixed width, zero wrapping */}
-                        <div className="shrink-0 flex flex-col items-end justify-start gap-1 min-w-[115px] text-right">
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider whitespace-nowrap shrink-0 inline-flex items-center gap-1 leading-tight ${
-                              student.paymentStatus === 'pendente'
-                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                            }`}
+                        {/* INTEGRATED RIGHT DRAWER: Student Quick Notes & Info Panel */}
+                        <div className="w-full lg:w-72 border-t lg:border-t-0 lg:border-l border-slate-800 bg-[#060B18] p-4 flex flex-col gap-3.5 shrink-0 overflow-y-auto max-h-[580px]">
+                          <h4 className="font-extrabold text-xs uppercase tracking-wider text-cyan-400 flex items-center gap-2 pb-2 border-b border-slate-800">
+                            <FileText className="w-4 h-4 text-cyan-400" />
+                            <span>Informações & Notas</span>
+                          </h4>
+
+                          {/* Quick Details List */}
+                          <div className="space-y-2 text-xs">
+                            <div>
+                              <span className="text-slate-400 block text-[10px]">Aluno:</span>
+                              <p className="font-extrabold text-white">{activeStudent.name}</p>
+                            </div>
+
+                            <div>
+                              <span className="text-slate-400 block text-[10px]">E-mail:</span>
+                              <p className="text-slate-300 font-medium truncate">{activeStudent.email}</p>
+                            </div>
+
+                            {activeStudent.phone && (
+                              <div>
+                                <span className="text-slate-400 block text-[10px]">Telefone / WhatsApp:</span>
+                                <p className="text-emerald-400 font-semibold">{activeStudent.phone}</p>
+                              </div>
+                            )}
+
+                            <div>
+                              <span className="text-slate-400 block text-[10px]">Plano:</span>
+                              <p className="text-cyan-300 font-bold">{activeStudent.planName || 'Consultoria V.I.P.'}</p>
+                            </div>
+                          </div>
+
+                          {/* Quick Status Control Dropdowns */}
+                          <div className="space-y-2.5 pt-2 border-t border-slate-800">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                                Status Pagamento
+                              </label>
+                              <select
+                                value={activeStudent.paymentStatus || 'pago'}
+                                onChange={(e) =>
+                                  saveStudentChanges({
+                                    ...activeStudent,
+                                    paymentStatus: e.target.value as any
+                                  })
+                                }
+                                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-cyan-500"
+                              >
+                                <option value="pago">🟢 Pago & Em Dia</option>
+                                <option value="pendente">🔴 Pendente (Cobrar)</option>
+                                <option value="vencendo">🟡 Próximo Vencimento</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                                Status Presença / Foco
+                              </label>
+                              <select
+                                value={activeStudent.statusBadge || 'focado'}
+                                onChange={(e) =>
+                                  saveStudentChanges({
+                                    ...activeStudent,
+                                    statusBadge: e.target.value as any
+                                  })
+                                }
+                                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-cyan-500"
+                              >
+                                <option value="focado">🔥 Focado (Constante)</option>
+                                <option value="inconstante">⚠️ Em Inconstância (Faltando)</option>
+                                <option value="atencao">🚨 Atenção Crítica</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Coach Private Notes Box */}
+                          <div className="pt-2 border-t border-slate-800 space-y-1.5">
+                            <label className="block text-[10px] font-bold text-cyan-400 uppercase">
+                              Notas do Mário
+                            </label>
+                            <textarea
+                              rows={3}
+                              value={activeStudent.marioNotes || ''}
+                              onChange={(e) =>
+                                saveStudentChanges({
+                                  ...activeStudent,
+                                  marioNotes: e.target.value
+                                })
+                              }
+                              placeholder="Observações do aluno..."
+                              className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+                            />
+                          </div>
+
+                          {/* Action to Jump Directly to Workout/Diet Editor */}
+                          <button
+                            onClick={() => {
+                              setSelectedStudentEmail(activeStudent.email);
+                              setActiveTab('treinos');
+                            }}
+                            className="w-full mt-1 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-xs uppercase tracking-wider hover:opacity-95 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-cyan-500/20 cursor-pointer"
                           >
-                            {student.paymentStatus === 'pendente' ? '🔴 PENDENTE' : '🟢 PAGO / EM DIA'}
-                          </span>
-
-                          <span className="text-[10px] font-extrabold text-amber-400 whitespace-nowrap shrink-0 inline-flex items-center justify-end gap-1 leading-tight mt-0.5">
-                            <Flame className="w-3 h-3 fill-amber-400 shrink-0" />
-                            <span>{student.streak} dias streak</span>
-                          </span>
+                            <Dumbbell className="w-4 h-4" />
+                            <span>Editar Ficha & Dieta</span>
+                          </button>
                         </div>
                       </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredStudents.length > 0 ? (
+                  filteredStudents.map((student) => {
+                    const isAlert = student.statusBadge === 'inconstante' || student.streak === 0;
+                    const lastMessage =
+                      student.messages && student.messages.length > 0
+                        ? student.messages[student.messages.length - 1]
+                        : null;
 
-                      {/* Last Chat Message Preview (If in Canal Direto or has messages) */}
-                      {lastMessage ? (
-                        <div
-                          onClick={() => {
-                            setSelectedStudentEmail(student.email);
-                            setActiveTab('chat');
-                          }}
-                          className="p-2.5 rounded-xl bg-slate-900/90 border border-blue-900/40 text-[11px] text-slate-300 hover:border-blue-500/50 transition-colors cursor-pointer flex items-center justify-between gap-2"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <span className="text-blue-400 font-bold block mb-0.5 text-[10px] uppercase tracking-wider">
-                              {lastMessage.sender === 'mario' ? 'Você (Mário):' : `${student.name}:`}
-                            </span>
-                            <p className="truncate text-slate-200">{lastMessage.text}</p>
+                    return (
+                      <div
+                        key={student.email}
+                        className={`p-4 sm:p-5 rounded-2xl bg-[#0B1324] border transition-all hover:scale-[1.01] flex flex-col justify-between gap-3.5 ${
+                          isAlert
+                            ? 'border-amber-500/40 shadow-lg shadow-amber-500/5'
+                            : 'border-slate-800 hover:border-cyan-500/40'
+                        }`}
+                      >
+                        {/* Top Header Row of Student Card */}
+                        <div className="flex items-start justify-between gap-2.5">
+                          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
+                              {student.photo ? (
+                                <img src={student.photo} alt={student.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <User className="w-6 h-6 text-cyan-400" />
+                              )}
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-extrabold text-white text-sm sm:text-base truncate">{student.name}</h4>
+                              <p className="text-[11px] sm:text-xs text-slate-400 truncate">{student.email}</p>
+                              <span className="inline-block mt-0.5 text-[11px] font-bold text-cyan-400 truncate max-w-full">
+                                Goal: {student.goal}
+                              </span>
+                            </div>
                           </div>
-                          <span className="text-[9px] text-slate-500 shrink-0 font-semibold">{lastMessage.time}</span>
+
+                          {/* Standardized Status Badges Column - Fixed width, zero wrapping */}
+                          <div className="shrink-0 flex flex-col items-end justify-start gap-1.5 min-w-[130px] text-right">
+                            <span
+                              className={`px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-wider whitespace-nowrap shrink-0 inline-flex items-center justify-center leading-none ${
+                                student.paymentStatus === 'pendente'
+                                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                              }`}
+                            >
+                              {student.paymentStatus === 'pendente' ? '🔴 PENDENTE' : '🟢 PAGO / EM DIA'}
+                            </span>
+
+                            <span className="text-[10px] sm:text-[11px] font-extrabold text-amber-400 whitespace-nowrap shrink-0 inline-flex items-center justify-end gap-1 leading-none">
+                              <Flame className="w-3.5 h-3.5 fill-amber-400 shrink-0" />
+                              <span>{student.streak} dias streak</span>
+                            </span>
+                          </div>
                         </div>
-                      ) : student.marioNotes ? (
-                        <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] text-slate-300">
-                          <span className="text-cyan-400 font-bold block mb-0.5">Nota do Mário:</span>
-                          <p className="line-clamp-2">{student.marioNotes}</p>
+
+                        {/* Last Chat Message Preview */}
+                        {lastMessage ? (
+                          <div
+                            onClick={() => {
+                              setChatActiveEmail(student.email);
+                              setChatMobileView('chat');
+                              setFilterType('chat');
+                            }}
+                            className="p-2.5 rounded-xl bg-slate-900/90 border border-blue-900/40 text-[11px] text-slate-300 hover:border-blue-500/50 transition-colors cursor-pointer flex items-center justify-between gap-2"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <span className="text-blue-400 font-bold block mb-0.5 text-[10px] uppercase tracking-wider">
+                                {lastMessage.sender === 'mario' ? 'Você (Mário):' : `${student.name}:`}
+                              </span>
+                              <p className="truncate text-slate-200">{lastMessage.text}</p>
+                            </div>
+                            <span className="text-[9px] text-slate-500 shrink-0 font-semibold">{lastMessage.time}</span>
+                          </div>
+                        ) : student.marioNotes ? (
+                          <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] text-slate-300">
+                            <span className="text-cyan-400 font-bold block mb-0.5">Nota do Mário:</span>
+                            <p className="line-clamp-2">{student.marioNotes}</p>
+                          </div>
+                        ) : null}
+
+                        {/* Card Action Controls */}
+                        <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-1.5 sm:gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedStudentEmail(student.email);
+                              setActiveTab('treinos');
+                            }}
+                            className="flex-1 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-[11px] sm:text-xs uppercase tracking-wider hover:opacity-95 transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            <span>Treino & Dieta</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setChatActiveEmail(student.email);
+                              setChatMobileView('chat');
+                              setFilterType('chat');
+                            }}
+                            className="px-3 py-2 sm:py-2.5 rounded-xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 transition-colors cursor-pointer bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40"
+                            title="Abrir Canal Direto de Mensagens com este aluno"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
+                            <span>Canal Direto</span>
+                          </button>
+
+                          <button
+                            onClick={() => onSwitchToStudentView(student.email)}
+                            className="p-2 sm:p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors cursor-pointer"
+                            title="Acessar aplicativo exatamente como este aluno vê"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
+                          </button>
                         </div>
-                      ) : null}
-
-                      {/* Card Action Controls */}
-                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-1.5 sm:gap-2">
-                        <button
-                          onClick={() => {
-                            setSelectedStudentEmail(student.email);
-                            setActiveTab('treinos');
-                          }}
-                          className="flex-1 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-[11px] sm:text-xs uppercase tracking-wider hover:opacity-95 transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer"
-                        >
-                          <Edit3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          <span>Treino & Dieta</span>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setSelectedStudentEmail(student.email);
-                            setActiveTab('chat');
-                          }}
-                          className={`px-3 py-2 sm:py-2.5 rounded-xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 transition-colors cursor-pointer ${
-                            filterType === 'chat'
-                              ? 'bg-blue-500 text-white font-extrabold shadow-md shadow-blue-500/20'
-                              : 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40'
-                          }`}
-                          title="Abrir Canal Direto de Mensagens com este aluno"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
-                          <span>Canal Direto</span>
-                        </button>
-
-                        <button
-                          onClick={() => onSwitchToStudentView(student.email)}
-                          className="p-2 sm:p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors cursor-pointer"
-                          title="Acessar aplicativo exatamente como este aluno vê"
-                        >
-                          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
-                        </button>
                       </div>
-                    </div>
-                  );
-                })
-              ) : (
+                    );
+                  })) : (
                 <div className="col-span-full py-12 text-center text-slate-400">
                   <Users className="w-10 h-10 text-slate-600 mx-auto mb-2" />
                   <p className="text-sm font-bold">Nenhum aluno encontrado para este filtro.</p>
                 </div>
               )}
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
+    </div>
 
       {/* ADD EXERCISE MODAL */}
       {showAddExerciseModal && (

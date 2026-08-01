@@ -615,10 +615,10 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
 
     // Find account in live accountsDb from server or fallback getStoredAccounts
     const allAccounts = Object.keys(accountsDb).length > 0 ? accountsDb : getStoredAccounts();
-    const foundAcc = Object.values(allAccounts).find(
+    const foundAcc = (Object.values(allAccounts) as UserAccount[]).find(
       a =>
-        a.email.toLowerCase() === cleanInput ||
-        a.name.toLowerCase().includes(cleanInput) ||
+        a.email?.toLowerCase() === cleanInput ||
+        a.name?.toLowerCase().includes(cleanInput) ||
         (a.isAdmin && (cleanInput === 'admmario' || cleanInput === 'mario'))
     );
 
