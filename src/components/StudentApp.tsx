@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { AdminPanel, DietPlan } from './AdminPanel';
 import { getExerciseImage } from '../utils/exerciseImages';
+import { HERO_IMAGE_PATH, HERO_IMAGE_FALLBACK } from '../data/mockData';
 
 interface StudentAppProps {
   onCloseApp?: () => void;
@@ -242,7 +243,7 @@ const getStoredAccounts = (): Record<string, UserAccount> => {
       password: '123456789',
       phone: '(41) 99999-0000',
       goal: 'Personal Trainer & Head Coach',
-      photo: './app-icon.jpg',
+      photo: HERO_IMAGE_PATH,
       streak: 365,
       waterGlasses: 12,
       exercises: DEFAULT_CLEAN_EXERCISES,
@@ -253,6 +254,7 @@ const getStoredAccounts = (): Record<string, UserAccount> => {
   } else {
     loadedAccounts[marioEmail].isAdmin = true;
     loadedAccounts[marioEmail].password = '123456789';
+    loadedAccounts[marioEmail].photo = HERO_IMAGE_PATH;
   }
 
   // Ensure Alexandre Sales account exists
@@ -910,11 +912,11 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
           <div className="relative inline-block mb-3">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 shadow-xl shadow-cyan-500/30 overflow-hidden mx-auto">
               <img
-                src="./app-icon.jpg"
+                src={HERO_IMAGE_PATH}
                 alt="Mário Czarnobai"
                 className="w-full h-full object-cover object-top rounded-[14px]"
                 onError={(e) => {
-                  e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400';
+                  e.currentTarget.src = HERO_IMAGE_FALLBACK;
                 }}
               />
             </div>
@@ -1286,7 +1288,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
                   alt={userProfile.name}
                   className="w-full h-full object-cover rounded-[14px]"
                   onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400';
+                    e.currentTarget.src = HERO_IMAGE_FALLBACK;
                   }}
                 />
               ) : (
@@ -1917,11 +1919,11 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
             <div className="p-3 rounded-t-2xl bg-slate-900 border border-slate-800 flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5">
                 <img
-                  src="./app-icon.jpg"
+                  src={HERO_IMAGE_PATH}
                   alt="Mário Czarnobai"
                   className="w-full h-full object-cover object-top rounded-full"
                   onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400';
+                    e.currentTarget.src = HERO_IMAGE_FALLBACK;
                   }}
                 />
               </div>

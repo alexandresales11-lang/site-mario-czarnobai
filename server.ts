@@ -48,7 +48,7 @@ function getDefaultInitialAccounts() {
       password: '123456789',
       phone: '(41) 99999-0000',
       goal: 'Personal Trainer & Head Coach',
-      photo: './app-icon.jpg',
+      photo: 'https://i.imgur.com/2Xk7rvg.png',
       streak: 365,
       waterGlasses: 12,
       exercises: DEFAULT_CLEAN_EXERCISES,
@@ -62,7 +62,7 @@ function getDefaultInitialAccounts() {
       password: '123',
       phone: '(74) 99812-3456',
       goal: 'Hipertrofia & Definição',
-      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
       streak: 12,
       waterGlasses: 9,
       exercises: DEMO_EXERCISES,
@@ -277,7 +277,7 @@ function loadAccounts() {
   // Ensure Mario is always admin and has correct photo
   if (accountsStore["mario@czarnobai.com"]) {
     accountsStore["mario@czarnobai.com"].isAdmin = true;
-    accountsStore["mario@czarnobai.com"].photo = './app-icon.jpg';
+    accountsStore["mario@czarnobai.com"].photo = 'https://i.imgur.com/2Xk7rvg.png';
   }
 
   saveAccounts();
