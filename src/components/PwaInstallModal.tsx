@@ -68,7 +68,7 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({ isOpen, onClos
 
         <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 flex items-center justify-center shadow-lg shadow-cyan-500/30 overflow-hidden">
-            <img src="https://i.imgur.com/FVHkZ7T.png" alt="Mário Czarnobai" className="w-full h-full object-cover rounded-[14px]" />
+            <img src="/app-icon.jpg" alt="Czarnobai App" className="w-full h-full object-cover rounded-[14px]" />
           </div>
           <div>
             <h3 className="text-xl font-bold font-display text-white flex items-center gap-2">

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getExerciseImage } from '../utils/exerciseImages';
 import {
   Users, Dumbbell, Utensils, DollarSign, AlertTriangle, CheckCircle2,
   Plus, Trash2, Edit3, Send, MessageSquare, Flame, Droplets, ShieldCheck,
@@ -562,7 +563,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="relative shrink-0">
             <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-cyan-300 p-0.5 shadow-xl shadow-cyan-500/30 overflow-hidden">
               <img
-                src="https://i.imgur.com/FVHkZ7T.png"
+                src="/app-icon.jpg"
                 alt="Personal Mário Czarnobai"
                 className="w-full h-full object-cover object-top rounded-[14px]"
               />
@@ -926,6 +927,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <span className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 text-cyan-400 font-extrabold text-xs flex items-center justify-center shrink-0">
                             {index + 1}
                           </span>
+                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-900 border border-slate-800 shrink-0">
+                            <img
+                              src={getExerciseImage(ex)}
+                              alt={ex.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=400';
+                              }}
+                            />
+                          </div>
                           <div>
                             <h4 className="font-bold text-sm text-white">{ex.name}</h4>
                             <p className="text-xs text-cyan-400 font-medium">{ex.muscle}</p>

@@ -8,6 +8,7 @@ import {
   Camera, Upload, X, Image as ImageIcon, Trash2
 } from 'lucide-react';
 import { AdminPanel, DietPlan } from './AdminPanel';
+import { getExerciseImage } from '../utils/exerciseImages';
 
 interface StudentAppProps {
   onCloseApp?: () => void;
@@ -241,7 +242,7 @@ const getStoredAccounts = (): Record<string, UserAccount> => {
       password: '123456789',
       phone: '(41) 99999-0000',
       goal: 'Personal Trainer & Head Coach',
-      photo: 'https://i.imgur.com/FVHkZ7T.png',
+      photo: '/app-icon.jpg',
       streak: 365,
       waterGlasses: 12,
       exercises: DEFAULT_CLEAN_EXERCISES,
@@ -909,7 +910,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
           <div className="relative inline-block mb-3">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 shadow-xl shadow-cyan-500/30 overflow-hidden mx-auto">
               <img
-                src="https://i.imgur.com/FVHkZ7T.png"
+                src="/app-icon.jpg"
                 alt="Mário Czarnobai"
                 className="w-full h-full object-cover object-top rounded-[14px]"
               />
@@ -1580,9 +1581,12 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
 
                       <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-slate-900 border border-slate-800">
                         <img
-                          src={exercise.image}
+                          src={getExerciseImage(exercise)}
                           alt={exercise.name}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=400';
+                          }}
                         />
                       </div>
 
@@ -1907,7 +1911,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
             <div className="p-3 rounded-t-2xl bg-slate-900 border border-slate-800 flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5">
                 <img
-                  src="https://i.imgur.com/FVHkZ7T.png"
+                  src="/app-icon.jpg"
                   alt="Mário Czarnobai"
                   className="w-full h-full object-cover object-top rounded-full"
                 />

@@ -12,25 +12,25 @@ const DB_FILE = path.join(process.cwd(), "accounts_db.json");
 // Default exercises schema for demo
 const DEFAULT_CLEAN_EXERCISES = {
   A: [
-    { id: '1', name: 'Supino Inclinado c/ Halteres', sets: 4, reps: '10 a 12', rest: '60s', completed: false, weight: 24, notes: 'Foco na cadência de descer em 3s' },
-    { id: '2', name: 'Crucifixo Reto na Polia', sets: 3, reps: '12 a 15', rest: '45s', completed: false, weight: 15, notes: 'Pico de contração de 1s no centro' },
-    { id: '3', name: 'Desenvolvimento c/ Halteres', sets: 4, reps: '10', rest: '60s', completed: false, weight: 18, notes: 'Manter cotovelos alinhados' },
-    { id: '4', name: 'Elevação Lateral', sets: 4, reps: '15', rest: '45s', completed: false, weight: 10, notes: 'Sem roubar na subida' },
-    { id: '5', name: 'Tríceps Corda', sets: 4, reps: '12 a 15', rest: '45s', completed: false, weight: 22, notes: 'Abrir a corda no final do movimento' }
+    { id: '1', name: 'Supino Inclinado c/ Halteres', muscle: 'Peitoral Superior', sets: 4, reps: '10 a 12', rest: '60s', completed: false, weight: 24, notes: 'Foco na cadência de descer em 3s', image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=400' },
+    { id: '2', name: 'Crucifixo Reto na Polia', muscle: 'Peitoral Inferior', sets: 3, reps: '12 a 15', rest: '45s', completed: false, weight: 15, notes: 'Pico de contração de 1s no centro', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=400' },
+    { id: '3', name: 'Desenvolvimento c/ Halteres', muscle: 'Ombros', sets: 4, reps: '10', rest: '60s', completed: false, weight: 18, notes: 'Manter cotovelos alinhados', image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=400' },
+    { id: '4', name: 'Elevação Lateral', muscle: 'Ombros', sets: 4, reps: '15', rest: '45s', completed: false, weight: 10, notes: 'Sem roubar na subida', image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=400' },
+    { id: '5', name: 'Tríceps Corda', muscle: 'Tríceps', sets: 4, reps: '12 a 15', rest: '45s', completed: false, weight: 22, notes: 'Abrir a corda no final do movimento', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=400' }
   ],
   B: [
-    { id: '6', name: 'Puxada Alta Pronada', sets: 4, reps: '10 a 12', rest: '60s', completed: false, weight: 55, notes: 'Expandir bem a dorsal na subida' },
-    { id: '7', name: 'Remada Curvada c/ Barra', sets: 4, reps: '10', rest: '60s', completed: false, weight: 50, notes: 'Tronco firme e abdômen contraído' },
-    { id: '8', name: 'Remada Baixa Triângulo', sets: 3, reps: '12', rest: '45s', completed: false, weight: 45, notes: 'Puxar até o umbigo' },
-    { id: '9', name: 'Rosca Direta c/ Barra W', sets: 4, reps: '10 a 12', rest: '45s', completed: false, weight: 14, notes: 'Sem balançar o quadril' },
-    { id: '10', name: 'Rosca Martelo c/ Halteres', sets: 3, reps: '12', rest: '45s', completed: false, weight: 12, notes: 'Aperta forte no topo' }
+    { id: '6', name: 'Puxada Alta Pronada', muscle: 'Costas / Dorsal', sets: 4, reps: '10 a 12', rest: '60s', completed: false, weight: 55, notes: 'Expandir bem a dorsal na subida', image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&q=80&w=400' },
+    { id: '7', name: 'Remada Curvada c/ Barra', muscle: 'Costas', sets: 4, reps: '10', rest: '60s', completed: false, weight: 50, notes: 'Tronco firme e abdômen contraído', image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&q=80&w=400' },
+    { id: '8', name: 'Remada Baixa Triângulo', muscle: 'Costas', sets: 3, reps: '12', rest: '45s', completed: false, weight: 45, notes: 'Puxar até o umbigo', image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&q=80&w=400' },
+    { id: '9', name: 'Rosca Direta c/ Barra W', muscle: 'Bíceps', sets: 4, reps: '10 a 12', rest: '45s', completed: false, weight: 14, notes: 'Sem balançar o quadril', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=400' },
+    { id: '10', name: 'Rosca Martelo c/ Halteres', muscle: 'Bíceps', sets: 3, reps: '12', rest: '45s', completed: false, weight: 12, notes: 'Aperta forte no topo', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=400' }
   ],
   C: [
-    { id: '11', name: 'Agachamento Livre', sets: 4, reps: '8 a 10', rest: '90s', completed: false, weight: 70, notes: 'Base firme, descer até 90 graus' },
-    { id: '12', name: 'Leg Press 45º', sets: 4, reps: '10 a 12', rest: '75s', completed: false, weight: 180, notes: 'Pés na largura dos ombros' },
-    { id: '13', name: 'Cadeira Extensora', sets: 3, reps: '15', rest: '45s', completed: false, weight: 40, notes: 'Hold de 2s na extensão total' },
-    { id: '14', name: 'Mesa Flexora', sets: 4, reps: '12', rest: '45s', completed: false, weight: 35, notes: 'Controlar a volta' },
-    { id: '15', name: 'Panturrilha no Leg Press', sets: 5, reps: '15 a 20', rest: '30s', completed: false, weight: 120, notes: 'Alongar bem a fáscia no fundo' }
+    { id: '11', name: 'Agachamento Livre', muscle: 'Quadríceps / Glúteos', sets: 4, reps: '8 a 10', rest: '90s', completed: false, weight: 70, notes: 'Base firme, descer até 90 graus', image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=400' },
+    { id: '12', name: 'Leg Press 45º', muscle: 'Quadríceps', sets: 4, reps: '10 a 12', rest: '75s', completed: false, weight: 180, notes: 'Pés na largura dos ombros', image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=400' },
+    { id: '13', name: 'Cadeira Extensora', muscle: 'Quadríceps', sets: 3, reps: '15', rest: '45s', completed: false, weight: 40, notes: 'Hold de 2s na extensão total', image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=400' },
+    { id: '14', name: 'Mesa Flexora', muscle: 'Posterior de Coxa', sets: 4, reps: '12', rest: '45s', completed: false, weight: 35, notes: 'Controlar a volta', image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=400' },
+    { id: '15', name: 'Panturrilha no Leg Press', muscle: 'Panturrilhas', sets: 5, reps: '15 a 20', rest: '30s', completed: false, weight: 120, notes: 'Alongar bem a fáscia no fundo', image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=400' }
   ]
 };
 
@@ -48,7 +48,7 @@ function getDefaultInitialAccounts() {
       password: '123456789',
       phone: '(41) 99999-0000',
       goal: 'Personal Trainer & Head Coach',
-      photo: 'https://i.imgur.com/FVHkZ7T.png',
+      photo: '/app-icon.jpg',
       streak: 365,
       waterGlasses: 12,
       exercises: DEFAULT_CLEAN_EXERCISES,
@@ -277,7 +277,7 @@ function loadAccounts() {
   // Ensure Mario is always admin and has correct photo
   if (accountsStore["mario@czarnobai.com"]) {
     accountsStore["mario@czarnobai.com"].isAdmin = true;
-    accountsStore["mario@czarnobai.com"].photo = 'https://i.imgur.com/FVHkZ7T.png';
+    accountsStore["mario@czarnobai.com"].photo = '/app-icon.jpg';
   }
 
   saveAccounts();
@@ -317,7 +317,7 @@ app.post("/api/accounts", (req, res) => {
     // Ensure Mario remains admin
     if (newStore["mario@czarnobai.com"]) {
       newStore["mario@czarnobai.com"].isAdmin = true;
-      newStore["mario@czarnobai.com"].photo = 'https://i.imgur.com/FVHkZ7T.png';
+      newStore["mario@czarnobai.com"].photo = '/app-icon.jpg';
     }
     accountsStore = newStore;
     saveAccounts();
