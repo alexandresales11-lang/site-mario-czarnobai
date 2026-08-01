@@ -532,24 +532,54 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
     }
   }, [currentUserEmail, isLoggedIn, accountsDb]);
 
-  // Real-time synchronization across browser tabs and windows
+  // Real-time synchronization across devices via Express API and localStorage fallback
   useEffect(() => {
-    const handleStorageChange = () => {
-      const latestAccounts = getStoredAccounts();
-      setAccountsDb(latestAccounts);
+    let isMounted = true;
+
+    // Fetch latest accounts from central server
+    const fetchServerAccounts = async () => {
+      try {
+        const res = await fetch('/api/accounts');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === 'object' && isMounted) {
+            setAccountsDb(data);
+            saveAccountsToStorage(data);
+          }
+        }
+      } catch (e) {
+        // fallback to localStorage if offline
+        const latestAccounts = getStoredAccounts();
+        if (isMounted) setAccountsDb(latestAccounts);
+      }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    // Poll every 1 second to handle same-window / iframe storage updates instantly
-    const intervalId = setInterval(handleStorageChange, 1000);
+    fetchServerAccounts();
+
+    // Poll every 1.5s to get instant cross-device updates (PC <-> Mobile)
+    const intervalId = setInterval(fetchServerAccounts, 1500);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      isMounted = false;
       clearInterval(intervalId);
     };
   }, []);
 
-  // Persist state updates to user's account in localStorage
+  // Sync update to server & localStorage
+  const syncAccountsWithServer = async (newDb: Record<string, UserAccount>) => {
+    saveAccountsToStorage(newDb);
+    try {
+      await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newDb)
+      });
+    } catch (e) {
+      console.error('Failed to sync with server:', e);
+    }
+  };
+
+  // Persist state updates to user's account in storage and backend server
   const updateCurrentAccountInStorage = (updatedFields: Partial<UserAccount>) => {
     if (!currentUserEmail) return;
     const key = currentUserEmail.toLowerCase();
@@ -557,7 +587,15 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
       const acc = prev[key] || { ...currentAcc };
       const newAcc = { ...acc, ...updatedFields };
       const newDb = { ...prev, [key]: newAcc };
+      
       saveAccountsToStorage(newDb);
+
+      fetch(`/api/accounts/${encodeURIComponent(key)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAcc)
+      }).catch(e => console.error('Error PUTting account update:', e));
+
       return newDb;
     });
   };
@@ -575,8 +613,8 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
       return;
     }
 
-    // Find account by email, name, or admin username (admmario)
-    const allAccounts = getStoredAccounts();
+    // Find account in live accountsDb from server or fallback getStoredAccounts
+    const allAccounts = Object.keys(accountsDb).length > 0 ? accountsDb : getStoredAccounts();
     const foundAcc = Object.values(allAccounts).find(
       a =>
         a.email.toLowerCase() === cleanInput ||
@@ -659,7 +697,7 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
     };
 
     allAccounts[cleanEmail] = newAcc;
-    saveAccountsToStorage(allAccounts);
+    syncAccountsWithServer(allAccounts);
     setAccountsDb(allAccounts);
 
     localStorage.setItem('czarnobai_logged_in', 'true');
@@ -1166,7 +1204,17 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
         accountsDb={accountsDb}
         onUpdateAccounts={(updatedDb) => {
           setAccountsDb(updatedDb);
-          saveAccountsToStorage(updatedDb);
+          syncAccountsWithServer(updatedDb);
+        }}
+        onDeleteStudent={(email) => {
+          const lowerEmail = email.toLowerCase().trim();
+          const newDb = { ...accountsDb };
+          delete newDb[lowerEmail];
+          setAccountsDb(newDb);
+          saveAccountsToStorage(newDb);
+          fetch(`/api/accounts/${encodeURIComponent(lowerEmail)}`, {
+            method: 'DELETE'
+          }).catch(e => console.error('Failed to delete student from server:', e));
         }}
         onLogoutAdmin={handleLogout}
         onSwitchToStudentView={(studentEmail) => {

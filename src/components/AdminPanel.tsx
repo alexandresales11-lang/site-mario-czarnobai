@@ -65,6 +65,7 @@ export interface UserAccount {
 interface AdminPanelProps {
   accountsDb: Record<string, UserAccount>;
   onUpdateAccounts: (updatedDb: Record<string, UserAccount>) => void;
+  onDeleteStudent?: (email: string) => void;
   onLogoutAdmin: () => void;
   onSwitchToStudentView: (email: string) => void;
   onCloseApp?: () => void;
@@ -73,6 +74,7 @@ interface AdminPanelProps {
 export const AdminPanel: React.FC<AdminPanelProps> = ({
   accountsDb,
   onUpdateAccounts,
+  onDeleteStudent,
   onLogoutAdmin,
   onSwitchToStudentView,
   onCloseApp
@@ -168,9 +170,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Helper to save account changes to DB
   const saveStudentChanges = (updatedAccount: UserAccount) => {
-    const key = updatedAccount.email.toLowerCase();
+    const key = updatedAccount.email.toLowerCase().trim();
     const newDb = { ...accountsDb, [key]: updatedAccount };
     onUpdateAccounts(newDb);
+    fetch(`/api/accounts/${encodeURIComponent(key)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedAccount)
+    }).catch(err => console.error('Error syncing student update to server:', err));
   };
 
   // Handler: Add New Workout Sheet (e.g., Treino E, F...)
@@ -532,64 +539,64 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       )}
 
       {/* Top Professional Header Bar */}
-      <div className="bg-gradient-to-r from-[#0C172B] via-[#091122] to-[#0C172B] border-b border-cyan-500/30 p-3.5 sm:p-6 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
-        <div className="flex flex-wrap items-center gap-3 min-w-0 flex-1">
+      <div className="bg-gradient-to-r from-[#0C172B] via-[#091122] to-[#0C172B] border-b border-cyan-500/30 p-3.5 sm:p-6 relative flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0 pr-28 sm:pr-0 flex-1">
           {onCloseApp && (
             <button
               onClick={onCloseApp}
-              className="p-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors border border-slate-800 shrink-0"
+              className="p-2 sm:p-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors border border-slate-800 shrink-0"
               title="Voltar ao Site"
             >
-              <ArrowLeft className="w-5 h-5 text-cyan-400" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
             </button>
           )}
 
           {/* Coach Avatar */}
           <div className="relative shrink-0">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-cyan-300 p-0.5 shadow-xl shadow-cyan-500/30 overflow-hidden">
+            <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-cyan-300 p-0.5 shadow-xl shadow-cyan-500/30 overflow-hidden">
               <img
                 src="https://i.imgur.com/FVHkZ7T.png"
                 alt="Personal Mário Czarnobai"
                 className="w-full h-full object-cover object-top rounded-[14px]"
               />
             </div>
-            <div className="absolute -bottom-1 -right-1 bg-cyan-400 text-black p-1 rounded-full shadow-md">
+            <div className="absolute -bottom-1 -right-1 bg-cyan-400 text-black p-0.5 rounded-full shadow-md">
               <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
             </div>
           </div>
 
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-extrabold text-white text-base sm:text-lg tracking-wide uppercase font-display">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <h2 className="font-extrabold text-white text-sm sm:text-lg tracking-wide uppercase font-display leading-tight truncate">
                 Mário Czarnobai
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gradient-to-r from-cyan-500 to-blue-600 text-black uppercase tracking-wider shadow-sm whitespace-nowrap shrink-0">
+              <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black bg-gradient-to-r from-cyan-500 to-blue-600 text-black uppercase tracking-wider shadow-sm whitespace-nowrap shrink-0 self-start sm:self-auto">
                 PAINEL DO PERSONAL
               </span>
             </div>
-            <p className="text-xs text-cyan-400 font-medium mt-0.5 flex flex-wrap items-center gap-2">
+            <p className="text-[11px] sm:text-xs text-cyan-400 font-medium mt-0.5">
               <span>CREF 049281-G/PR</span>
             </p>
           </div>
         </div>
 
-        {/* Action Header Buttons */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Action Header Buttons - Positioned cleanly in top right corner on mobile */}
+        <div className="absolute top-3.5 right-3.5 sm:relative sm:top-auto sm:right-auto flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             onClick={() => setShowAddStudentModal(true)}
-            className="flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all cursor-pointer"
+            className="flex items-center gap-1 sm:gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md shadow-cyan-500/20 hover:opacity-95 transition-all cursor-pointer whitespace-nowrap"
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
+            <Plus className="w-3.5 h-3.5 stroke-[3]" />
             <span>Novo Aluno</span>
           </button>
 
           <button
             onClick={onLogoutAdmin}
-            className="p-2 sm:p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition-colors flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+            className="p-1.5 sm:p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition-colors flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-bold cursor-pointer"
             title="Sair da Conta Admin"
           >
-            <LogOut className="w-4 h-4 text-rose-400" />
-            <span className="hidden sm:inline">Sair Admin</span>
+            <LogOut className="w-3.5 h-3.5 text-rose-400" />
+            <span className="hidden sm:inline">Sair</span>
           </button>
         </div>
       </div>
@@ -1281,7 +1288,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   />
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800/80 pt-4">
                   <button
                     type="button"
                     onClick={() => notifySaved('Dados de plano e anotações do aluno atualizados com sucesso!')}
@@ -1289,6 +1296,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   >
                     <Check className="w-4 h-4 stroke-[3]" />
                     <span>Salvar Alterações do Aluno</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm(`Tem certeza que deseja remover o cadastro de ${selectedStudent.name}?`)) {
+                        const emailToDelete = selectedStudent.email;
+                        if (onDeleteStudent) {
+                          onDeleteStudent(emailToDelete);
+                        } else {
+                          const newDb = { ...accountsDb };
+                          delete newDb[emailToDelete.toLowerCase()];
+                          onUpdateAccounts(newDb);
+                        }
+                        setSelectedStudentEmail(null);
+                        notifySaved(`Aluno ${selectedStudent.name} removido do sistema.`);
+                      }
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Excluir Cadastro do Aluno</span>
                   </button>
                 </div>
               </div>
@@ -1495,23 +1524,43 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
             </div>
 
+            {/* Special Banner when Canal Direto filter is active */}
+            {filterType === 'chat' && (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-950/80 via-[#0A1D36] to-blue-950/80 border border-blue-500/40 flex items-center justify-between gap-3 text-xs text-blue-200 shadow-xl">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 shrink-0">
+                    <MessageSquare className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-white text-sm">Central do Canal Direto (WhatsApp & Chat)</p>
+                    <p className="text-[11px] text-slate-300 mt-0.5">Clique em "💬 Abrir Chat com Aluno" em qualquer aluno abaixo para abrir a conversa direta, enviar avisos, cobranças ou mensagens personalizadas.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Students Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredStudents.length > 0 ? (
                 filteredStudents.map((student) => {
                   const isAlert = student.statusBadge === 'inconstante' || student.streak === 0;
+                  const lastMessage = student.messages && student.messages.length > 0
+                    ? student.messages[student.messages.length - 1]
+                    : null;
+
                   return (
                     <div
                       key={student.email}
-                      className={`p-5 rounded-2xl bg-[#0B1324] border transition-all hover:scale-[1.01] flex flex-col justify-between gap-4 ${
+                      className={`p-4 sm:p-5 rounded-2xl bg-[#0B1324] border transition-all hover:scale-[1.01] flex flex-col justify-between gap-3.5 ${
                         isAlert
                           ? 'border-amber-500/40 shadow-lg shadow-amber-500/5'
                           : 'border-slate-800 hover:border-cyan-500/40'
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
+                      {/* Top Header Row of Student Card */}
+                      <div className="flex items-start justify-between gap-2.5">
+                        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
                             {student.photo ? (
                               <img src={student.photo} alt={student.name} className="w-full h-full object-cover" />
                             ) : (
@@ -1519,63 +1568,93 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             )}
                           </div>
 
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-extrabold text-white text-base">{student.name}</h4>
-                            </div>
-                            <p className="text-xs text-slate-400">{student.email}</p>
-                            <span className="inline-block mt-1 text-[11px] font-bold text-cyan-400">
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-extrabold text-white text-sm sm:text-base truncate">{student.name}</h4>
+                            <p className="text-[11px] sm:text-xs text-slate-400 truncate">{student.email}</p>
+                            <span className="inline-block mt-0.5 text-[11px] font-bold text-cyan-400 truncate max-w-full">
                               Goal: {student.goal}
                             </span>
                           </div>
                         </div>
 
-                        {/* Status Badges */}
-                        <div className="flex flex-col items-end gap-1">
+                        {/* Standardized Status Badges Column - Fixed width, zero wrapping */}
+                        <div className="shrink-0 flex flex-col items-end justify-start gap-1 min-w-[115px] text-right">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                            className={`px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider whitespace-nowrap shrink-0 inline-flex items-center gap-1 leading-tight ${
                               student.paymentStatus === 'pendente'
                                 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
                                 : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                             }`}
                           >
-                            {student.paymentStatus === 'pendente' ? '🔴 Pendente' : '🟢 Pago / Em dia'}
+                            {student.paymentStatus === 'pendente' ? '🔴 PENDENTE' : '🟢 PAGO / EM DIA'}
                           </span>
 
-                          <span className="text-[10px] font-bold text-amber-400 flex items-center gap-1">
-                            <Flame className="w-3 h-3 fill-amber-400" />
-                            {student.streak} dias streak
+                          <span className="text-[10px] font-extrabold text-amber-400 whitespace-nowrap shrink-0 inline-flex items-center justify-end gap-1 leading-tight mt-0.5">
+                            <Flame className="w-3 h-3 fill-amber-400 shrink-0" />
+                            <span>{student.streak} dias streak</span>
                           </span>
                         </div>
                       </div>
 
-                      {/* Observations / Coach Note Preview */}
-                      {student.marioNotes && (
+                      {/* Last Chat Message Preview (If in Canal Direto or has messages) */}
+                      {lastMessage ? (
+                        <div
+                          onClick={() => {
+                            setSelectedStudentEmail(student.email);
+                            setActiveTab('chat');
+                          }}
+                          className="p-2.5 rounded-xl bg-slate-900/90 border border-blue-900/40 text-[11px] text-slate-300 hover:border-blue-500/50 transition-colors cursor-pointer flex items-center justify-between gap-2"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <span className="text-blue-400 font-bold block mb-0.5 text-[10px] uppercase tracking-wider">
+                              {lastMessage.sender === 'mario' ? 'Você (Mário):' : `${student.name}:`}
+                            </span>
+                            <p className="truncate text-slate-200">{lastMessage.text}</p>
+                          </div>
+                          <span className="text-[9px] text-slate-500 shrink-0 font-semibold">{lastMessage.time}</span>
+                        </div>
+                      ) : student.marioNotes ? (
                         <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] text-slate-300">
                           <span className="text-cyan-400 font-bold block mb-0.5">Nota do Mário:</span>
                           <p className="line-clamp-2">{student.marioNotes}</p>
                         </div>
-                      )}
+                      ) : null}
 
                       {/* Card Action Controls */}
-                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2">
+                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-1.5 sm:gap-2">
                         <button
                           onClick={() => {
                             setSelectedStudentEmail(student.email);
                             setActiveTab('treinos');
                           }}
-                          className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-xs uppercase tracking-wider hover:opacity-95 transition-all flex items-center justify-center gap-1.5"
+                          className="flex-1 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold text-[11px] sm:text-xs uppercase tracking-wider hover:opacity-95 transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer"
                         >
-                          <Edit3 className="w-4 h-4" />
-                          <span>Gerenciar Treino & Dieta</span>
+                          <Edit3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <span>Treino & Dieta</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setSelectedStudentEmail(student.email);
+                            setActiveTab('chat');
+                          }}
+                          className={`px-3 py-2 sm:py-2.5 rounded-xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 transition-colors cursor-pointer ${
+                            filterType === 'chat'
+                              ? 'bg-blue-500 text-white font-extrabold shadow-md shadow-blue-500/20'
+                              : 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40'
+                          }`}
+                          title="Abrir Canal Direto de Mensagens com este aluno"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
+                          <span>Canal Direto</span>
                         </button>
 
                         <button
                           onClick={() => onSwitchToStudentView(student.email)}
-                          className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors"
+                          className="p-2 sm:p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors cursor-pointer"
                           title="Acessar aplicativo exatamente como este aluno vê"
                         >
-                          <Sparkles className="w-4 h-4 text-cyan-400" />
+                          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
                         </button>
                       </div>
                     </div>
