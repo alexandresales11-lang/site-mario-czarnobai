@@ -3,12 +3,12 @@
   "name": "Mário Czarnobai - Personal & Consultoria",
   "icons": [
     {
-      "src": "/app-icon.jpg",
+      "src": "./app-icon.jpg",
       "type": "image/jpeg",
       "sizes": "192x192"
     },
     {
-      "src": "/app-icon.jpg",
+      "src": "./app-icon.jpg",
       "type": "image/jpeg",
       "sizes": "512x512"
     }

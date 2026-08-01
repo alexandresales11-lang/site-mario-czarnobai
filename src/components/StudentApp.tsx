@@ -242,7 +242,7 @@ const getStoredAccounts = (): Record<string, UserAccount> => {
       password: '123456789',
       phone: '(41) 99999-0000',
       goal: 'Personal Trainer & Head Coach',
-      photo: '/app-icon.jpg',
+      photo: './app-icon.jpg',
       streak: 365,
       waterGlasses: 12,
       exercises: DEFAULT_CLEAN_EXERCISES,
@@ -910,9 +910,12 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
           <div className="relative inline-block mb-3">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 shadow-xl shadow-cyan-500/30 overflow-hidden mx-auto">
               <img
-                src="/app-icon.jpg"
+                src="./app-icon.jpg"
                 alt="Mário Czarnobai"
                 className="w-full h-full object-cover object-top rounded-[14px]"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400';
+                }}
               />
             </div>
             <div className="absolute -bottom-1 -right-1 bg-cyan-500 p-1 rounded-full text-black shadow-md">
@@ -1282,6 +1285,9 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
                   src={userProfile.photo}
                   alt={userProfile.name}
                   className="w-full h-full object-cover rounded-[14px]"
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400';
+                  }}
                 />
               ) : (
                 <div className="w-full h-full rounded-[14px] bg-slate-800 flex items-center justify-center text-cyan-400 font-extrabold text-sm border border-cyan-500/30">
@@ -1911,9 +1917,12 @@ export const StudentApp: React.FC<StudentAppProps> = ({ onCloseApp, onOpenInstal
             <div className="p-3 rounded-t-2xl bg-slate-900 border border-slate-800 flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5">
                 <img
-                  src="/app-icon.jpg"
+                  src="./app-icon.jpg"
                   alt="Mário Czarnobai"
                   className="w-full h-full object-cover object-top rounded-full"
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400';
+                  }}
                 />
               </div>
               <div>

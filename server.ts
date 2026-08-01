@@ -48,7 +48,7 @@ function getDefaultInitialAccounts() {
       password: '123456789',
       phone: '(41) 99999-0000',
       goal: 'Personal Trainer & Head Coach',
-      photo: '/app-icon.jpg',
+      photo: './app-icon.jpg',
       streak: 365,
       waterGlasses: 12,
       exercises: DEFAULT_CLEAN_EXERCISES,
@@ -277,7 +277,7 @@ function loadAccounts() {
   // Ensure Mario is always admin and has correct photo
   if (accountsStore["mario@czarnobai.com"]) {
     accountsStore["mario@czarnobai.com"].isAdmin = true;
-    accountsStore["mario@czarnobai.com"].photo = '/app-icon.jpg';
+    accountsStore["mario@czarnobai.com"].photo = './app-icon.jpg';
   }
 
   saveAccounts();
@@ -317,7 +317,7 @@ app.post("/api/accounts", (req, res) => {
     // Ensure Mario remains admin
     if (newStore["mario@czarnobai.com"]) {
       newStore["mario@czarnobai.com"].isAdmin = true;
-      newStore["mario@czarnobai.com"].photo = '/app-icon.jpg';
+      newStore["mario@czarnobai.com"].photo = './app-icon.jpg';
     }
     accountsStore = newStore;
     saveAccounts();

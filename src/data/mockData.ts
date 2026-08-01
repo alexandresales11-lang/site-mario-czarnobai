@@ -1,6 +1,6 @@
 import { Transformation, Testimonial, ConsultancyPlan } from '../types';
 
-export const HERO_IMAGE_PATH = 'https://images.unsplash.com/photo-1567013127542-490d757e51fc?q=80&w=800&auto=format&fit=crop';
+export const HERO_IMAGE_PATH = './mario-hero.jpg';
 export const STUDENT_TRANSFORM_1 = '/src/assets/images/student_transform_1_1785267828394.jpg';
 
 export const TRANSFORMATIONS: Transformation[] = [

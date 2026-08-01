@@ -160,6 +160,9 @@ export const Hero: React.FC = () => {
                     alt="Mário Czarnobai Personal Trainer"
                     className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-700"
                     referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.src = './mario-hero.jpg';
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0B1322] via-transparent to-transparent opacity-90"></div>
 

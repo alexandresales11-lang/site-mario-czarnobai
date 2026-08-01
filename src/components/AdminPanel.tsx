@@ -563,9 +563,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="relative shrink-0">
             <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-cyan-300 p-0.5 shadow-xl shadow-cyan-500/30 overflow-hidden">
               <img
-                src="/app-icon.jpg"
+                src="./app-icon.jpg"
                 alt="Personal Mário Czarnobai"
                 className="w-full h-full object-cover object-top rounded-[14px]"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400';
+                }}
               />
             </div>
             <div className="absolute -bottom-1 -right-1 bg-cyan-400 text-black p-0.5 rounded-full shadow-md">
@@ -739,7 +742,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                 <div className="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-cyan-500/40 overflow-hidden flex items-center justify-center">
                   {selectedStudent.photo ? (
-                    <img src={selectedStudent.photo} alt={selectedStudent.name} className="w-full h-full object-cover" />
+                    <img
+                      src={selectedStudent.photo}
+                      alt={selectedStudent.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400';
+                      }}
+                    />
                   ) : (
                     <User className="w-8 h-8 text-cyan-400" />
                   )}
@@ -1631,7 +1641,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <div className="relative shrink-0">
                                 <div className="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center">
                                   {student.photo ? (
-                                    <img src={student.photo} alt={student.name} className="w-full h-full object-cover" />
+                                    <img
+                                      src={student.photo}
+                                      alt={student.name}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400';
+                                      }}
+                                    />
                                   ) : (
                                     <User className="w-6 h-6 text-cyan-400" />
                                   )}
@@ -2029,7 +2046,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                             <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
                               {student.photo ? (
-                                <img src={student.photo} alt={student.name} className="w-full h-full object-cover" />
+                                <img
+                                  src={student.photo}
+                                  alt={student.name}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400';
+                                  }}
+                                />
                               ) : (
                                 <User className="w-6 h-6 text-cyan-400" />
                               )}
