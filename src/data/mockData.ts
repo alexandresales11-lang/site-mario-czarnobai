@@ -1,6 +1,7 @@
 import { Transformation, Testimonial, ConsultancyPlan } from '../types';
 
-export const HERO_IMAGE_PATH = './mario-hero.jpg';
+export const HERO_IMAGE_PATH = 'https://i.imgur.com/2Xk7rvg.png';
+export const HERO_IMAGE_FALLBACK = new URL('../assets/images/mario_hero.png', import.meta.url).href;
 export const STUDENT_TRANSFORM_1 = '/src/assets/images/student_transform_1_1785267828394.jpg';
 
 export const TRANSFORMATIONS: Transformation[] = [

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Phone, Calendar, Target, Smartphone, TrendingUp, Clock, CheckCircle2, ShieldAlert, Award, Star } from 'lucide-react';
-import { HERO_IMAGE_PATH } from '../data/mockData';
+import { HERO_IMAGE_PATH, HERO_IMAGE_FALLBACK } from '../data/mockData';
 
 export const Hero: React.FC = () => {
   return (
@@ -161,7 +161,12 @@ export const Hero: React.FC = () => {
                     className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-700"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
-                      e.currentTarget.src = './mario-hero.jpg';
+                      const target = e.currentTarget;
+                      if (target.src !== HERO_IMAGE_FALLBACK) {
+                        target.src = HERO_IMAGE_FALLBACK;
+                      } else {
+                        target.src = './mario-hero.jpg';
+                      }
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0B1322] via-transparent to-transparent opacity-90"></div>
